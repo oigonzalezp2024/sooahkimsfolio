@@ -1,4 +1,3 @@
-import "./style.scss";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
@@ -77,9 +76,6 @@ const showModal = (modal) => {
 
   isModalOpen = true;
   controls.enabled = false;
-  controls.enableZoom = false;
-  controls.enablePan = false;
-  controls.enableRotate = false;
 
   if (currentHoveredObject) {
     playHoverAnimation(currentHoveredObject, false);
@@ -235,6 +231,7 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener(
   "touchstart",
   (e) => {
+    if (isModalOpen) return;
     e.preventDefault();
     pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
     pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
@@ -245,6 +242,7 @@ window.addEventListener(
 window.addEventListener(
   "touchend",
   (e) => {
+    if (isModalOpen) return;
     e.preventDefault();
     handleRaycasterInteraction();
   },
@@ -355,6 +353,7 @@ let fish;
 let coffeePosition;
 let hourHand;
 let minuteHand;
+let chairTop;
 
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
@@ -364,6 +363,10 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
         child.userData.initialPosition = new THREE.Vector3().copy(
           child.position
         );
+      }
+
+      if (child.name.includes("Chair_Top")) {
+        chairTop = child;
       }
 
       if (child.name.includes("Hour_Hand")) {

@@ -57,6 +57,7 @@ p {
   top: 0;
   left: 0;
   z-index: 1;
+  display: none;
   background-color: rgba(32, 32, 32, 0.2);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
@@ -64,6 +65,7 @@ p {
 
 //Modals
 .modal {
+  @include vars.centered;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -77,7 +79,7 @@ p {
   border: 8px solid vars.$base-purple;
   background-color: vars.$base-light-purple;
 
-  @include vars.centered;
+  // display: none;
 }
 
 .contact {
@@ -111,10 +113,10 @@ p {
   height: 200px;
   overflow: hidden;
   position: relative;
-  -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
 
   @include media.media("<=tablet") {
-    height: 200px;
+    height: 350px;
   }
 }
 
