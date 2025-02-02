@@ -6,6 +6,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import smokeVertexShader from "./shaders/smoke/vertex.glsl";
 import smokeFragmentShader from "./shaders/smoke/fragment.glsl";
 import gsap from "gsap";
+import { Howl } from "howler";
 
 const canvas = document.querySelector("#experience-canvas");
 const sizes = {
@@ -200,9 +201,84 @@ window.addEventListener(
   { passive: false }
 );
 
+// Piano key mapping
+const pianoKeyMap = {
+  C1_Key: "Key_24",
+  "C#1_Key": "Key_23",
+  D1_Key: "Key_22",
+  "D#1_Key": "Key_21",
+  E1_Key: "Key_20",
+  F1_Key: "Key_19",
+  "F#1_Key": "Key_18",
+  G1_Key: "Key_17",
+  "G#1_Key": "Key_16",
+  A1_Key: "Key_15",
+  "A#1_Key": "Key_14",
+  B1_Key: "Key_13",
+  C2_Key: "Key_12",
+  "C#2_Key": "Key_11",
+  D2_Key: "Key_10",
+  "D#2_Key": "Key_9",
+  E2_Key: "Key_8",
+  F2_Key: "Key_7",
+  "F#2_Key": "Key_6",
+  G2_Key: "Key_5",
+  "G#2_Key": "Key_4",
+  A2_Key: "Key_3",
+  "A#2_Key": "Key_2",
+  B2_Key: "Key_1",
+};
+
+const pianoSounds = {};
+
+Object.values(pianoKeyMap).forEach((soundKey) => {
+  pianoSounds[soundKey] = new Howl({
+    src: [`/audio/sfx/piano/${soundKey}.ogg`],
+    preload: true,
+    volume: 0.5,
+  });
+});
+
 function handleRaycasterInteraction() {
   if (currentIntersects.length > 0) {
     const object = currentIntersects[0].object;
+
+    Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
+      if (object.name.includes(keyName)) {
+        console.log("trigger bro");
+        pianoSounds[soundKey].play();
+
+        gsap.to(object.rotation, {
+          x: object.userData.initialRotation.x + Math.PI / 42,
+          duration: 0.5,
+          ease: "back.out(2)",
+          onComplete: () => {
+            gsap.to(object.rotation, {
+              x: object.userData.initialRotation.x,
+              duration: 0.2,
+              ease: "power2.out",
+            });
+          },
+        });
+
+        gsap.to(object.scale, {
+          x: object.userData.initialScale.x * 1.1,
+          y: object.userData.initialScale.y * 1.1,
+          // z: object.userData.initialScale.z * 1.1,
+          duration: 0.2,
+          ease: "power2.out",
+          onComplete: () => {
+            gsap.to(object.scale, {
+              x: object.userData.initialScale.x,
+              y: object.userData.initialScale.y,
+              // z: object.userData.initialScale.z,
+              duration: 0.2,
+              ease: "power2.out",
+            });
+          },
+        });
+      }
+    });
 
     Object.entries(socialLinks).forEach(([key, url]) => {
       if (object.name.includes(key)) {
@@ -247,7 +323,7 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
         raycasterObjects.push(child);
       }
 
-      if (child.name.includes("Hover")) {
+      if (child.name.includes("Hover") || child.name.includes("Key")) {
         child.userData.initialScale = new THREE.Vector3().copy(child.scale);
         child.userData.initialPosition = new THREE.Vector3().copy(
           child.position
@@ -377,6 +453,27 @@ function playHoverAnimation(object, isHovering) {
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
 
+  if (object.name.includes("Coffee")) {
+    gsap.killTweensOf(smoke.scale);
+    if (isHovering) {
+      gsap.to(smoke.scale, {
+        x: 1.4,
+        y: 1.4,
+        z: 1.4,
+        duration: 0.5,
+        ease: "back.out(2)",
+      });
+    } else {
+      gsap.to(smoke.scale, {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.3,
+        ease: "back.out(2)",
+      });
+    }
+  }
+
   if (isHovering) {
     // Scale animation for all objects
     gsap.to(object.scale, {
@@ -384,14 +481,14 @@ function playHoverAnimation(object, isHovering) {
       y: object.userData.initialScale.y * 1.4,
       z: object.userData.initialScale.z * 1.4,
       duration: 0.5,
-      ease: "back.out(2.2)",
+      ease: "back.out(2)",
     });
 
     if (object.name.includes("About_Button")) {
       gsap.to(object.rotation, {
         x: object.userData.initialRotation.x - Math.PI / 10,
         duration: 0.5,
-        ease: "back.out(2.2)",
+        ease: "back.out(2)",
       });
     } else if (
       object.name.includes("Contact_Button") ||
@@ -403,7 +500,7 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.rotation, {
         x: object.userData.initialRotation.x + Math.PI / 10,
         duration: 0.5,
-        ease: "back.out(2.2)",
+        ease: "back.out(2)",
       });
     }
 
@@ -411,7 +508,7 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.position, {
         y: object.userData.initialPosition.y + 0.2,
         duration: 0.5,
-        ease: "back.out(2.2)",
+        ease: "back.out(2)",
       });
     }
   } else {
@@ -421,7 +518,7 @@ function playHoverAnimation(object, isHovering) {
       y: object.userData.initialScale.y,
       z: object.userData.initialScale.z,
       duration: 0.3,
-      ease: "back.out(2.2)",
+      ease: "back.out(2)",
     });
 
     if (
@@ -435,7 +532,7 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.rotation, {
         x: object.userData.initialRotation.x,
         duration: 0.3,
-        ease: "back.out(2.2)",
+        ease: "back.out(2)",
       });
     }
 
@@ -443,7 +540,7 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.position, {
         y: object.userData.initialPosition.y,
         duration: 0.3,
-        ease: "back.out(2.2)",
+        ease: "back.out(2)",
       });
     }
   }
