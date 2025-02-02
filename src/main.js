@@ -17,11 +17,29 @@ const modals = {
   contact: document.querySelector(".modal.contact"),
 };
 
+let touchHappened = false;
 document.querySelectorAll(".modal-exit-button").forEach((button) => {
-  button.addEventListener("click", (e) => {
-    const modal = e.target.closest(".modal");
-    hideModal(modal);
-  });
+  button.addEventListener(
+    "touchend",
+    (e) => {
+      touchHappened = true;
+      e.preventDefault();
+      const modal = e.target.closest(".modal");
+      hideModal(modal);
+    },
+    { passive: false }
+  );
+
+  button.addEventListener(
+    "click",
+    (e) => {
+      if (touchHappened) return;
+      e.preventDefault();
+      const modal = e.target.closest(".modal");
+      hideModal(modal);
+    },
+    { passive: false }
+  );
 });
 
 const showModal = (modal) => {
@@ -50,6 +68,7 @@ const yAxisFans = [];
 
 const raycasterObjects = [];
 let currentIntersects = [];
+let currentHoveredObject = null;
 
 const socialLinks = {
   GitHub: "https://github.com/",
@@ -140,11 +159,31 @@ videoTexture.colorSpace = THREE.SRGBColorSpace;
 videoTexture.flipY = false;
 
 window.addEventListener("mousemove", (e) => {
-  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  touchHappened = false;
+  pointer.x = (e.clientX / sizes.width) * 2 - 1;
+  pointer.y = -(e.clientY / sizes.height) * 2 + 1;
 });
 
-window.addEventListener("click", (e) => {
+window.addEventListener(
+  "touchstart",
+  (e) => {
+    e.preventDefault();
+    pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
+    pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
+  },
+  { passive: false }
+);
+
+window.addEventListener(
+  "touchend",
+  (e) => {
+    e.preventDefault();
+    handleRaycasterInteraction();
+  },
+  { passive: false }
+);
+
+function handleRaycasterInteraction() {
   if (currentIntersects.length > 0) {
     const object = currentIntersects[0].object;
 
@@ -166,13 +205,23 @@ window.addEventListener("click", (e) => {
       showModal(modals.contact);
     }
   }
-});
+}
 
-loader.load("/models/Room_Portfolio_V3.glb", (glb) => {
+window.addEventListener("click", handleRaycasterInteraction);
+
+loader.load("/models/Room_Portfolio_V4.glb", (glb) => {
   glb.scene.traverse((child) => {
     if (child.isMesh) {
       if (child.name.includes("Raycaster")) {
         raycasterObjects.push(child);
+      }
+
+      if (child.name.includes("Hover")) {
+        child.userData.initialScale = new THREE.Vector3().copy(child.scale);
+        child.userData.initialPosition = new THREE.Vector3().copy(
+          child.position
+        );
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
       }
 
       if (child.name.includes("Water")) {
@@ -258,6 +307,40 @@ window.addEventListener("resize", () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
+function playHoverAnimation(object, isHovering) {
+  gsap.killTweensOf(object.scale);
+  gsap.killTweensOf(object.rotation);
+  gsap.killTweensOf(object.position);
+
+  if (isHovering) {
+    gsap.to(object.scale, {
+      x: object.userData.initialScale.x * 1.2,
+      y: object.userData.initialScale.y * 1.2,
+      z: object.userData.initialScale.z * 1.2,
+      duration: 0.5,
+      ease: "bounce.out(1.8)",
+    });
+    gsap.to(object.rotation, {
+      x: object.userData.initialRotation.x + Math.PI / 8,
+      duration: 0.5,
+      ease: "bounce.out(1.8)",
+    });
+  } else {
+    gsap.to(object.scale, {
+      x: object.userData.initialScale.x,
+      y: object.userData.initialScale.y,
+      z: object.userData.initialScale.z,
+      duration: 0.3,
+      ease: "bounce.out(1.8)",
+    });
+    gsap.to(object.rotation, {
+      x: object.userData.initialRotation.x,
+      duration: 0.3,
+      ease: "bounce.out(1.8)",
+    });
+  }
+}
+
 const render = () => {
   controls.update();
 
@@ -285,12 +368,27 @@ const render = () => {
   if (currentIntersects.length > 0) {
     const currentIntersectObject = currentIntersects[0].object;
 
+    if (currentIntersectObject.name.includes("Hover")) {
+      if (currentIntersectObject !== currentHoveredObject) {
+        if (currentHoveredObject) {
+          playHoverAnimation(currentHoveredObject, false);
+        }
+
+        playHoverAnimation(currentIntersectObject, true);
+        currentHoveredObject = currentIntersectObject;
+      }
+    }
+
     if (currentIntersectObject.name.includes("Pointer")) {
       document.body.style.cursor = "pointer";
     } else {
       document.body.style.cursor = "default";
     }
   } else {
+    if (currentHoveredObject) {
+      playHoverAnimation(currentHoveredObject, false);
+      currentHoveredObject = null;
+    }
     document.body.style.cursor = "default";
   }
 
