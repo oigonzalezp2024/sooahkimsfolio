@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import smokeVertexShader from "./shaders/smoke/vertex.glsl";
+import smokeFragmentShader from "./shaders/smoke/fragment.glsl";
 import gsap from "gsap";
 
 const canvas = document.querySelector("#experience-canvas");
@@ -143,6 +145,7 @@ Object.entries(textureMap).forEach(([key, paths]) => {
   loadedTextures.night[key] = nightTexture;
 });
 
+// Reuseable Materials
 const glassMaterial = new THREE.MeshPhysicalMaterial({
   transmission: 1,
   opacity: 1,
@@ -224,6 +227,7 @@ function handleRaycasterInteraction() {
 window.addEventListener("click", handleRaycasterInteraction);
 
 let fish;
+let coffeePosition;
 
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
@@ -233,6 +237,10 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
         child.userData.initialPosition = new THREE.Vector3().copy(
           child.position
         );
+      }
+
+      if (child.name.includes("Coffee")) {
+        coffeePosition = child.position.clone();
       }
 
       if (child.name.includes("Raycaster")) {
@@ -290,6 +298,15 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
       }
     }
   });
+
+  if (coffeePosition) {
+    smoke.position.set(
+      coffeePosition.x,
+      coffeePosition.y + 0.2,
+      coffeePosition.z
+    );
+  }
+
   scene.add(glb.scene);
 });
 
@@ -315,6 +332,31 @@ controls.target.set(
   1.992258015338971,
   -0.26919808674082935
 );
+
+// Shader Stuffffffffff
+const smokeGeometry = new THREE.PlaneGeometry(1, 1, 16, 64);
+smokeGeometry.translate(0, 0.5, 0);
+smokeGeometry.scale(0.33, 1, 0.33);
+
+const perlinTexture = textureLoader.load("/shaders/perlin.png");
+perlinTexture.wrapS = THREE.RepeatWrapping;
+perlinTexture.wrapT = THREE.RepeatWrapping;
+
+const smokeMaterial = new THREE.ShaderMaterial({
+  vertexShader: smokeVertexShader,
+  fragmentShader: smokeFragmentShader,
+  uniforms: {
+    uTime: new THREE.Uniform(0),
+    uPerlinTexture: new THREE.Uniform(perlinTexture),
+  },
+  side: THREE.DoubleSide,
+  transparent: true,
+  depthWrite: false,
+});
+
+const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial);
+smoke.position.y = 1.83;
+scene.add(smoke);
 
 // Event Listeners
 window.addEventListener("resize", () => {
@@ -342,14 +384,14 @@ function playHoverAnimation(object, isHovering) {
       y: object.userData.initialScale.y * 1.4,
       z: object.userData.initialScale.z * 1.4,
       duration: 0.5,
-      ease: "bounce.out(1.8)",
+      ease: "back.out(2.2)",
     });
 
     if (object.name.includes("About_Button")) {
       gsap.to(object.rotation, {
         x: object.userData.initialRotation.x - Math.PI / 10,
         duration: 0.5,
-        ease: "bounce.out(1.8)",
+        ease: "back.out(2.2)",
       });
     } else if (
       object.name.includes("Contact_Button") ||
@@ -361,7 +403,7 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.rotation, {
         x: object.userData.initialRotation.x + Math.PI / 10,
         duration: 0.5,
-        ease: "bounce.out(1.8)",
+        ease: "back.out(2.2)",
       });
     }
 
@@ -369,7 +411,7 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.position, {
         y: object.userData.initialPosition.y + 0.2,
         duration: 0.5,
-        ease: "bounce.out(1.8)",
+        ease: "back.out(2.2)",
       });
     }
   } else {
@@ -379,7 +421,7 @@ function playHoverAnimation(object, isHovering) {
       y: object.userData.initialScale.y,
       z: object.userData.initialScale.z,
       duration: 0.3,
-      ease: "bounce.out(1.8)",
+      ease: "back.out(2.2)",
     });
 
     if (
@@ -393,7 +435,7 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.rotation, {
         x: object.userData.initialRotation.x,
         duration: 0.3,
-        ease: "bounce.out(1.8)",
+        ease: "back.out(2.2)",
       });
     }
 
@@ -401,13 +443,19 @@ function playHoverAnimation(object, isHovering) {
       gsap.to(object.position, {
         y: object.userData.initialPosition.y,
         duration: 0.3,
-        ease: "bounce.out(1.8)",
+        ease: "back.out(2.2)",
       });
     }
   }
 }
 
+// Render
+const clock = new THREE.Clock();
+
 const render = (timestamp) => {
+  const elapsedTime = clock.getElapsedTime();
+  smokeMaterial.uniforms.uTime.value = elapsedTime;
+
   controls.update();
 
   // console.log(camera.position);
