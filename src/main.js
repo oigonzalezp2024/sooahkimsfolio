@@ -245,7 +245,6 @@ function handleRaycasterInteraction() {
 
     Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
       if (object.name.includes(keyName)) {
-        console.log("trigger bro");
         pianoSounds[soundKey].play();
 
         gsap.to(object.rotation, {
@@ -304,6 +303,8 @@ window.addEventListener("click", handleRaycasterInteraction);
 
 let fish;
 let coffeePosition;
+let hourHand;
+let minuteHand;
 
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
@@ -313,6 +314,16 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
         child.userData.initialPosition = new THREE.Vector3().copy(
           child.position
         );
+      }
+
+      if (child.name.includes("Hour_Hand")) {
+        hourHand = child;
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+      }
+
+      if (child.name.includes("Minute_Hand")) {
+        minuteHand = child;
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
       }
 
       if (child.name.includes("Coffee")) {
@@ -549,11 +560,29 @@ function playHoverAnimation(object, isHovering) {
 // Render
 const clock = new THREE.Clock();
 
+const updateClockHands = () => {
+  if (!hourHand || !minuteHand) return;
+
+  const now = new Date();
+  const hours = now.getHours() % 12;
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+
+  const minuteAngle = (minutes + seconds / 60) * ((Math.PI * 2) / 60);
+
+  const hourAngle = (hours + minutes / 60) * ((Math.PI * 2) / 12);
+
+  minuteHand.rotation.x = -minuteAngle;
+  hourHand.rotation.x = -hourAngle;
+};
+
 const render = (timestamp) => {
   const elapsedTime = clock.getElapsedTime();
   smokeMaterial.uniforms.uTime.value = elapsedTime;
 
   controls.update();
+
+  updateClockHands();
 
   // console.log(camera.position);
   // console.log("000000000");
@@ -561,11 +590,11 @@ const render = (timestamp) => {
 
   // Animate Fans
   xAxisFans.forEach((fan) => {
-    fan.rotation.x += 0.01;
+    fan.rotation.x += 0.04;
   });
 
   yAxisFans.forEach((fan) => {
-    fan.rotation.y += 0.01;
+    fan.rotation.y += 0.04;
   });
 
   // Fish

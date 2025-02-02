@@ -1,6 +1,7 @@
 @use "./styles/fonts.scss";
 @use "./styles/reset.scss";
 @use "./styles/variables.scss" as vars;
+@use "./styles/defaults.scss" as media;
 
 * {
   margin: 0;
@@ -53,8 +54,10 @@ p {
   transform: translate(-50%, -50%);
   font-size: 2.2rem;
   z-index: 9999;
-  display: none;
   background-color: vars.$base-light-purple;
+  @include media.media("<=tablet") {
+    background-color: tomato;
+  }
 }
 
 .modal-paragraph-header {
