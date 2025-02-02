@@ -77,6 +77,9 @@ const showModal = (modal) => {
 
   isModalOpen = true;
   controls.enabled = false;
+  controls.enableZoom = false;
+  controls.enablePan = false;
+  controls.enableRotate = false;
 
   if (currentHoveredObject) {
     playHoverAnimation(currentHoveredObject, false);

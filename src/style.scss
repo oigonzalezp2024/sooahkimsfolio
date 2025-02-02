@@ -78,8 +78,6 @@ p {
   background-color: vars.$base-light-purple;
 
   @include vars.centered;
-  @include media.media("<=tablet") {
-  }
 }
 
 .contact {
@@ -112,12 +110,21 @@ p {
   width: 100%;
   height: 200px;
   overflow: hidden;
+  position: relative;
+  -webkit-overflow-scrolling: touch; /* Enable momentum scrolling on iOS */
+
+  @include media.media("<=tablet") {
+    height: 200px;
+  }
 }
 
 .modal-content-wrapper {
   height: 100%;
   overflow-y: auto;
   padding-right: 10px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 
   &::-webkit-scrollbar {
     width: 8px;
