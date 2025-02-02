@@ -42,8 +42,19 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
   );
 });
 
+let isModalOpen = false;
+
 const showModal = (modal) => {
   modal.style.display = "block";
+  isModalOpen = true;
+  controls.enabled = false;
+
+  if (currentHoveredObject) {
+    playHoverAnimation(currentHoveredObject, false);
+    currentHoveredObject = null;
+  }
+  document.body.style.cursor = "default";
+  currentIntersects = [];
 
   gsap.set(modal, { opacity: 0 });
 
@@ -54,6 +65,9 @@ const showModal = (modal) => {
 };
 
 const hideModal = (modal) => {
+  isModalOpen = false;
+  controls.enabled = true;
+
   gsap.to(modal, {
     opacity: 0,
     duration: 0.5,
@@ -209,9 +223,18 @@ function handleRaycasterInteraction() {
 
 window.addEventListener("click", handleRaycasterInteraction);
 
-loader.load("/models/Room_Portfolio_V4.glb", (glb) => {
+let fish;
+
+loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
     if (child.isMesh) {
+      if (child.name.includes("Fish")) {
+        fish = child;
+        child.userData.initialPosition = new THREE.Vector3().copy(
+          child.position
+        );
+      }
+
       if (child.name.includes("Raycaster")) {
         raycasterObjects.push(child);
       }
@@ -313,19 +336,44 @@ function playHoverAnimation(object, isHovering) {
   gsap.killTweensOf(object.position);
 
   if (isHovering) {
+    // Scale animation for all objects
     gsap.to(object.scale, {
-      x: object.userData.initialScale.x * 1.2,
-      y: object.userData.initialScale.y * 1.2,
-      z: object.userData.initialScale.z * 1.2,
+      x: object.userData.initialScale.x * 1.4,
+      y: object.userData.initialScale.y * 1.4,
+      z: object.userData.initialScale.z * 1.4,
       duration: 0.5,
       ease: "bounce.out(1.8)",
     });
-    gsap.to(object.rotation, {
-      x: object.userData.initialRotation.x + Math.PI / 8,
-      duration: 0.5,
-      ease: "bounce.out(1.8)",
-    });
+
+    if (object.name.includes("About_Button")) {
+      gsap.to(object.rotation, {
+        x: object.userData.initialRotation.x - Math.PI / 10,
+        duration: 0.5,
+        ease: "bounce.out(1.8)",
+      });
+    } else if (
+      object.name.includes("Contact_Button") ||
+      object.name.includes("My_Work_Button") ||
+      object.name.includes("GitHub") ||
+      object.name.includes("YouTube") ||
+      object.name.includes("Twitter")
+    ) {
+      gsap.to(object.rotation, {
+        x: object.userData.initialRotation.x + Math.PI / 10,
+        duration: 0.5,
+        ease: "bounce.out(1.8)",
+      });
+    }
+
+    if (object.name.includes("Boba") || object.name.includes("Name_Letter")) {
+      gsap.to(object.position, {
+        y: object.userData.initialPosition.y + 0.2,
+        duration: 0.5,
+        ease: "bounce.out(1.8)",
+      });
+    }
   } else {
+    // Reset scale for all objects
     gsap.to(object.scale, {
       x: object.userData.initialScale.x,
       y: object.userData.initialScale.y,
@@ -333,15 +381,33 @@ function playHoverAnimation(object, isHovering) {
       duration: 0.3,
       ease: "bounce.out(1.8)",
     });
-    gsap.to(object.rotation, {
-      x: object.userData.initialRotation.x,
-      duration: 0.3,
-      ease: "bounce.out(1.8)",
-    });
+
+    if (
+      object.name.includes("About_Button") ||
+      object.name.includes("Contact_Button") ||
+      object.name.includes("My_Work_Button") ||
+      object.name.includes("GitHub") ||
+      object.name.includes("YouTube") ||
+      object.name.includes("Twitter")
+    ) {
+      gsap.to(object.rotation, {
+        x: object.userData.initialRotation.x,
+        duration: 0.3,
+        ease: "bounce.out(1.8)",
+      });
+    }
+
+    if (object.name.includes("Boba") || object.name.includes("Name_Letter")) {
+      gsap.to(object.position, {
+        y: object.userData.initialPosition.y,
+        duration: 0.3,
+        ease: "bounce.out(1.8)",
+      });
+    }
   }
 }
 
-const render = () => {
+const render = (timestamp) => {
   controls.update();
 
   // console.log(camera.position);
@@ -357,39 +423,50 @@ const render = () => {
     fan.rotation.y += 0.01;
   });
 
+  // Fish
+  if (fish) {
+    const time = timestamp * 0.001;
+    const amplitude = 0.12;
+    const position =
+      amplitude * Math.sin(time) * (1 - Math.abs(Math.sin(time)) * 0.1);
+    fish.position.y = fish.userData.initialPosition.y + position;
+  }
+
   // Raycaster
-  raycaster.setFromCamera(pointer, camera);
+  if (!isModalOpen) {
+    raycaster.setFromCamera(pointer, camera);
 
-  // calculate objects intersecting the picking ray
-  currentIntersects = raycaster.intersectObjects(raycasterObjects);
+    // calculate objects intersecting the picking ray
+    currentIntersects = raycaster.intersectObjects(raycasterObjects);
 
-  for (let i = 0; i < currentIntersects.length; i++) {}
+    for (let i = 0; i < currentIntersects.length; i++) {}
 
-  if (currentIntersects.length > 0) {
-    const currentIntersectObject = currentIntersects[0].object;
+    if (currentIntersects.length > 0) {
+      const currentIntersectObject = currentIntersects[0].object;
 
-    if (currentIntersectObject.name.includes("Hover")) {
-      if (currentIntersectObject !== currentHoveredObject) {
-        if (currentHoveredObject) {
-          playHoverAnimation(currentHoveredObject, false);
+      if (currentIntersectObject.name.includes("Hover")) {
+        if (currentIntersectObject !== currentHoveredObject) {
+          if (currentHoveredObject) {
+            playHoverAnimation(currentHoveredObject, false);
+          }
+
+          playHoverAnimation(currentIntersectObject, true);
+          currentHoveredObject = currentIntersectObject;
         }
-
-        playHoverAnimation(currentIntersectObject, true);
-        currentHoveredObject = currentIntersectObject;
       }
-    }
 
-    if (currentIntersectObject.name.includes("Pointer")) {
-      document.body.style.cursor = "pointer";
+      if (currentIntersectObject.name.includes("Pointer")) {
+        document.body.style.cursor = "pointer";
+      } else {
+        document.body.style.cursor = "default";
+      }
     } else {
+      if (currentHoveredObject) {
+        playHoverAnimation(currentHoveredObject, false);
+        currentHoveredObject = null;
+      }
       document.body.style.cursor = "default";
     }
-  } else {
-    if (currentHoveredObject) {
-      playHoverAnimation(currentHoveredObject, false);
-      currentHoveredObject = null;
-    }
-    document.body.style.cursor = "default";
   }
 
   renderer.render(scene, camera);
