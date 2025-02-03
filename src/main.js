@@ -585,7 +585,7 @@ const handleThemeToggle = (e) => {
     scale: 5,
     duration: 0.5,
     ease: "back.out(2)",
-    onStarte: () => {
+    onStart: () => {
       // Switch SVGs
       if (isNightMode) {
         sunSvg.style.display = "none";

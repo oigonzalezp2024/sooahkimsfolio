@@ -10,17 +10,19 @@ $themes: (
     base-purple-200: #cdb3d6,
     base-pink: #eedfe4,
     base-light-purple: #ead7ef,
+    header-text: #6c3f7c,
     text: #020202,
     svgs: #6e5e9c,
   ),
   dark: (
-    base-dark-purple: #eac8f7,
-    base-purple: #1f0f4e,
+    base-dark-purple: #ddd6d6,
+    base-purple: #2a0f4e,
     base-purple-200: #62416d,
     base-pink: #8b4e62,
     base-light-purple: #401d49,
-    text: #fcfcfc,
-    svgs: #fcfcfc,
+    header-text: #e6dede,
+    text: #e6dede,
+    svgs: #e6dede,
   ),
 );
 
@@ -141,9 +143,12 @@ ul {
 
 .image-wrapper {
   width: 100%;
-  height: 450px;
+  height: 550px;
   overflow: hidden;
   margin-bottom: 12px;
+  @include media.media("<=tablet") {
+    height: auto;
+  }
 }
 
 .base-image {
@@ -151,7 +156,7 @@ ul {
   width: 100%;
   border-radius: 24px;
   object-fit: cover;
-  border: 4px solid vars.$base-purple;
+  border: 6px solid vars.$base-purple;
 }
 
 .work-image-wrapper {
@@ -166,7 +171,7 @@ ul {
   width: 100%;
   border-radius: 24px;
   object-fit: cover;
-  border: 4px solid vars.$base-purple;
+  border: 6px solid vars.$base-purple;
 }
 
 // Overlay
@@ -290,11 +295,15 @@ ul {
   height: 550px;
 
   @include media.media("<=tablet") {
+    height: 500px;
   }
 }
 
 .about .modal-content {
-  height: 500px;
+  height: 550px;
+  @include media.media("<=tablet") {
+    height: 500px;
+  }
 }
 
 .contact .modal-content {
@@ -368,8 +377,8 @@ ul {
 .modal-exit-button {
   @include vars.centered;
   position: absolute;
-  top: -2rem;
-  left: -2rem;
+  top: -2.3rem;
+  left: -2.3rem;
   border: 8px solid vars.$base-purple;
   background-color: vars.$base-light-purple;
   padding: 15px;
@@ -384,8 +393,15 @@ ul {
   }
 
   @include media.media("<=tablet") {
-    top: -1.5rem;
-    left: -1.5rem;
+    // Reset the top and left positions
+    top: auto;
+    left: 50%;
+    bottom: -2rem;
+    transform: translateX(-50%);
+
+    &:hover {
+      transform: translateX(-50%) scale(1.3);
+    }
   }
 }
 
@@ -594,7 +610,7 @@ ul {
 
 .modal-title {
   @include themed() {
-    color: t("base-dark-purple");
+    color: t("header-text");
     background-color: t("base-purple-200");
   }
 }
@@ -623,7 +639,6 @@ ul {
 .list-text-2,
 .modal-paragraph-header,
 .modal-paragraph-header-2,
-.modal-title,
 .modal-paragraph-text {
   @include themed() {
     color: t("text");
