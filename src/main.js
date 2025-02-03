@@ -213,19 +213,17 @@ Object.entries(textureMap).forEach(([key, paths]) => {
 // Reuseable Materials
 const glassMaterial = new THREE.MeshPhysicalMaterial({
   transmission: 1,
-  opacity: 0.01,
-  color: 0xffffff,
+  opacity: 1,
+  color: 0xfbfbfb,
   metalness: 0,
   roughness: 0,
-  ior: 1.5,
+  ior: 3,
   thickness: 0.01,
   specularIntensity: 1,
   envMap: environmentMap,
   envMapIntensity: 1,
   depthWrite: false,
-  exposure: 1,
-  specularColor: 0xffffff,
-  transmissionResolutionScale: 1,
+  specularColor: 0xfbfbfb,
 });
 
 const whiteMaterial = new THREE.MeshBasicMaterial({
@@ -248,7 +246,6 @@ const createMaterialForTextureSet = (textureSet) => {
     },
     vertexShader: themeVertexShader,
     fragmentShader: themeFragmentShader,
-    outputColorSpace: THREE.SRGBColorSpace,
   });
 
   // Ensure all textures in the material have proper filtering
@@ -479,7 +476,6 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
       } else {
         Object.keys(textureMap).forEach((key) => {
           if (child.name.includes(key)) {
-            console.log(key);
             child.material = roomMaterials[key];
 
             if (child.name.includes("Fan")) {
@@ -572,17 +568,39 @@ const themeToggleButton = document.querySelector(".theme-toggle-button");
 const muteToggleButton = document.querySelector(".mute-toggle-button");
 
 let isNightMode = false;
-themeToggleButton.addEventListener("click", () => {
-  console.log("CLICKEDDD");
-  isNightMode = !isNightMode;
-  Object.values(roomMaterials).forEach((material) => {
-    gsap.to(material.uniforms.uMixRatio, {
-      value: isNightMode ? 1 : 0,
-      duration: 1.5,
-      ease: "power2.inOut",
+themeToggleButton.addEventListener(
+  "click",
+  () => {
+    touchHappened = true;
+    e.preventDefault();
+    isNightMode = !isNightMode;
+    Object.values(roomMaterials).forEach((material) => {
+      gsap.to(material.uniforms.uMixRatio, {
+        value: isNightMode ? 1 : 0,
+        duration: 1.5,
+        ease: "power2.inOut",
+      });
     });
-  });
-});
+  },
+  { passive: false }
+);
+
+themeToggleButton.addEventListener(
+  "touchend",
+  (e) => {
+    if (touchHappened) return;
+    e.preventDefault();
+    isNightMode = !isNightMode;
+    Object.values(roomMaterials).forEach((material) => {
+      gsap.to(material.uniforms.uMixRatio, {
+        value: isNightMode ? 1 : 0,
+        duration: 1.5,
+        ease: "power2.inOut",
+      });
+    });
+  },
+  { passive: false }
+);
 
 window.addEventListener("resize", () => {
   sizes.width = window.innerWidth;
