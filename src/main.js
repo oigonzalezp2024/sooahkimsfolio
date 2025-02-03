@@ -4,6 +4,8 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import smokeVertexShader from "./shaders/smoke/vertex.glsl";
 import smokeFragmentShader from "./shaders/smoke/fragment.glsl";
+import themeVertexShader from "./shaders/theme/vertex.glsl";
+import themeFragmentShader from "./shaders/theme/fragment.glsl";
 import gsap from "gsap";
 import { Howl } from "howler";
 
@@ -191,21 +193,28 @@ const loadedTextures = {
 };
 
 Object.entries(textureMap).forEach(([key, paths]) => {
+  // Load and configure day texture
   const dayTexture = textureLoader.load(paths.day);
   dayTexture.flipY = false;
   dayTexture.colorSpace = THREE.SRGBColorSpace;
+  dayTexture.minFilter = THREE.LinearFilter;
+  dayTexture.magFilter = THREE.LinearFilter;
   loadedTextures.day[key] = dayTexture;
 
+  // Load and configure night texture
   const nightTexture = textureLoader.load(paths.night);
   nightTexture.flipY = false;
   nightTexture.colorSpace = THREE.SRGBColorSpace;
+  nightTexture.minFilter = THREE.LinearFilter;
+  nightTexture.magFilter = THREE.LinearFilter;
   loadedTextures.night[key] = nightTexture;
 });
 
 // Reuseable Materials
 const glassMaterial = new THREE.MeshPhysicalMaterial({
   transmission: 1,
-  opacity: 1,
+  opacity: 0.01,
+  color: 0xffffff,
   metalness: 0,
   roughness: 0,
   ior: 1.5,
@@ -214,11 +223,51 @@ const glassMaterial = new THREE.MeshPhysicalMaterial({
   envMap: environmentMap,
   envMapIntensity: 1,
   depthWrite: false,
+  exposure: 1,
+  specularColor: 0xffffff,
+  transmissionResolutionScale: 1,
 });
 
 const whiteMaterial = new THREE.MeshBasicMaterial({
   color: 0xffffff,
 });
+
+const createMaterialForTextureSet = (textureSet) => {
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uDayTexture1: { value: loadedTextures.day.First },
+      uNightTexture1: { value: loadedTextures.night.First },
+      uDayTexture2: { value: loadedTextures.day.Second },
+      uNightTexture2: { value: loadedTextures.night.Second },
+      uDayTexture3: { value: loadedTextures.day.Third },
+      uNightTexture3: { value: loadedTextures.night.Third },
+      uDayTexture4: { value: loadedTextures.day.Fourth },
+      uNightTexture4: { value: loadedTextures.night.Fourth },
+      uMixRatio: { value: 0 },
+      uTextureSet: { value: textureSet },
+    },
+    vertexShader: themeVertexShader,
+    fragmentShader: themeFragmentShader,
+    outputColorSpace: THREE.SRGBColorSpace,
+  });
+
+  // Ensure all textures in the material have proper filtering
+  Object.entries(material.uniforms).forEach(([key, uniform]) => {
+    if (uniform.value instanceof THREE.Texture) {
+      uniform.value.minFilter = THREE.LinearFilter;
+      uniform.value.magFilter = THREE.LinearFilter;
+    }
+  });
+
+  return material;
+};
+
+const roomMaterials = {
+  First: createMaterialForTextureSet(1),
+  Second: createMaterialForTextureSet(2),
+  Third: createMaterialForTextureSet(3),
+  Fourth: createMaterialForTextureSet(4),
+};
 
 const videoElement = document.createElement("video");
 videoElement.src = "/textures/video/Screen.mp4";
@@ -430,11 +479,8 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
       } else {
         Object.keys(textureMap).forEach((key) => {
           if (child.name.includes(key)) {
-            const material = new THREE.MeshBasicMaterial({
-              map: loadedTextures.day[key],
-            });
-
-            child.material = material;
+            console.log(key);
+            child.material = roomMaterials[key];
 
             if (child.name.includes("Fan")) {
               if (
@@ -445,10 +491,6 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
               } else {
                 yAxisFans.push(child);
               }
-            }
-
-            if (child.material.map) {
-              child.material.map.minFilter = THREE.LinearFilter;
             }
           }
         });
@@ -526,6 +568,22 @@ smoke.position.y = 1.83;
 scene.add(smoke);
 
 // Event Listeners
+const themeToggleButton = document.querySelector(".theme-toggle-button");
+const muteToggleButton = document.querySelector(".mute-toggle-button");
+
+let isNightMode = false;
+themeToggleButton.addEventListener("click", () => {
+  console.log("CLICKEDDD");
+  isNightMode = !isNightMode;
+  Object.values(roomMaterials).forEach((material) => {
+    gsap.to(material.uniforms.uMixRatio, {
+      value: isNightMode ? 1 : 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+    });
+  });
+});
+
 window.addEventListener("resize", () => {
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
