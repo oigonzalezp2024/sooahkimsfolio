@@ -130,7 +130,7 @@ ul {
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 1;
@@ -388,7 +388,7 @@ ul {
 
 // Toggle Button
 .mute-toggle-button {
-  position: absolute;
+  position: fixed;
   top: 48px;
   right: 48px;
   z-index: 2;
@@ -398,4 +398,10 @@ ul {
 .sound-svg {
   width: 40px;
   height: 40px;
+
+  stroke: white;
+}
+
+.sound-off-svg {
+  display: none;
 }
