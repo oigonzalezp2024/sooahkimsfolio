@@ -570,9 +570,10 @@ const muteToggleButton = document.querySelector(".mute-toggle-button");
 let isNightMode = false;
 themeToggleButton.addEventListener(
   "click",
-  () => {
-    touchHappened = true;
+  (e) => {
+    if (touchHappened) return;
     e.preventDefault();
+
     isNightMode = !isNightMode;
     Object.values(roomMaterials).forEach((material) => {
       gsap.to(material.uniforms.uMixRatio, {
@@ -588,7 +589,7 @@ themeToggleButton.addEventListener(
 themeToggleButton.addEventListener(
   "touchend",
   (e) => {
-    if (touchHappened) return;
+    touchHappened = true;
     e.preventDefault();
     isNightMode = !isNightMode;
     Object.values(roomMaterials).forEach((material) => {
