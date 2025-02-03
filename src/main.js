@@ -138,9 +138,6 @@ const hideModal = (modal) => {
   });
 };
 
-const xAxisFans = [];
-const yAxisFans = [];
-
 const raycasterObjects = [];
 let currentIntersects = [];
 let currentHoveredObject = null;
@@ -363,7 +360,7 @@ function handleRaycasterInteraction() {
             gsap.to(object.rotation, {
               x: object.userData.initialRotation.x,
               duration: 0.2,
-              ease: "power2.out",
+              ease: "back.out(1.8)",
             });
           },
         });
@@ -373,14 +370,14 @@ function handleRaycasterInteraction() {
           y: object.userData.initialScale.y * 1.1,
           // z: object.userData.initialScale.z * 1.1,
           duration: 0.2,
-          ease: "power2.out",
+          ease: "back.out(1.8)",
           onComplete: () => {
             gsap.to(object.scale, {
               x: object.userData.initialScale.x,
               y: object.userData.initialScale.y,
               // z: object.userData.initialScale.z,
               duration: 0.2,
-              ease: "power2.out",
+              ease: "back.out(1.8)",
             });
           },
         });
@@ -409,11 +406,25 @@ function handleRaycasterInteraction() {
 
 window.addEventListener("click", handleRaycasterInteraction);
 
+// LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
 let fish;
 let coffeePosition;
 let hourHand;
 let minuteHand;
 let chairTop;
+const xAxisFans = [];
+const yAxisFans = [];
+let plank1,
+  plank2,
+  workBtn,
+  aboutBtn,
+  contactBtn,
+  boba,
+  github,
+  youtube,
+  twitter;
+
+let letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8;
 
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
@@ -424,8 +435,7 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
           child.position
         );
       }
-
-      if (child.name.includes("Chair_Top")) {
+      if (child.name.includes("Chair_Top_Raycaster_Third")) {
         chairTop = child;
         child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
       }
@@ -454,6 +464,60 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
           child.position
         );
         child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+      }
+
+      // LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
+      if (child.name.includes("Hanging_Plank_1")) {
+        plank1 = child;
+        child.scale.set(0, 1, 0);
+      } else if (child.name.includes("Hanging_Plank_2")) {
+        plank2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("My_Work_Button")) {
+        workBtn = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("About_Button")) {
+        aboutBtn = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Contact_Button")) {
+        contactBtn = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Boba")) {
+        boba = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("GitHub")) {
+        github = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("YouTube")) {
+        youtube = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Twitter")) {
+        twitter = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_1")) {
+        letter1 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_2")) {
+        letter2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_3")) {
+        letter3 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_4")) {
+        letter4 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_5")) {
+        letter5 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_6")) {
+        letter6 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_7")) {
+        letter7 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_8")) {
+        letter8 = child;
+        child.scale.set(0, 0, 0);
       }
 
       if (child.name.includes("Water")) {
@@ -503,7 +567,353 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
   }
 
   scene.add(glb.scene);
+  playIntroAnimation();
 });
+
+function playIntroAnimation() {
+  const t1 = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  t1.timeScale(0.8);
+
+  t1.to(plank1.scale, {
+    z: 1,
+    x: 1,
+  })
+    .to(
+      plank2.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      workBtn.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.6"
+    )
+    .to(
+      aboutBtn.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.6"
+    )
+    .to(
+      contactBtn.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.6"
+    );
+
+  const t2 = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  t2.timeScale(0.8);
+
+  t2.to(boba.scale, {
+    z: 1,
+    y: 1,
+    x: 1,
+  })
+    .to(
+      github.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      youtube.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.6"
+    )
+    .to(
+      twitter.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.6"
+    );
+
+  const lettersTl = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.7)",
+    },
+  });
+  lettersTl.timeScale(0.8);
+
+  lettersTl
+    // Letter 1
+    .to(letter1.position, {
+      y: letter1.userData.initialPosition.y + 0.3,
+      duration: 0.4,
+      ease: "back.out(1.8)",
+    })
+    .to(
+      letter1.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter1.position,
+      {
+        y: letter1.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    )
+
+    // Letter 2
+    .to(
+      letter2.position,
+      {
+        y: letter2.userData.initialPosition.y + 0.3,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "-=0.5"
+    )
+    .to(
+      letter2.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter2.position,
+      {
+        y: letter2.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    )
+
+    // Letter 3
+    .to(
+      letter3.position,
+      {
+        y: letter3.userData.initialPosition.y + 0.3,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "-=0.5"
+    )
+    .to(
+      letter3.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter3.position,
+      {
+        y: letter3.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    )
+
+    // Letter 4
+    .to(
+      letter4.position,
+      {
+        y: letter4.userData.initialPosition.y + 0.3,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "-=0.5"
+    )
+    .to(
+      letter4.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter4.position,
+      {
+        y: letter4.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    )
+
+    // Letter 5
+    .to(
+      letter5.position,
+      {
+        y: letter5.userData.initialPosition.y + 0.3,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "-=0.5"
+    )
+    .to(
+      letter5.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter5.position,
+      {
+        y: letter5.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    )
+
+    // Letter 6
+    .to(
+      letter6.position,
+      {
+        y: letter6.userData.initialPosition.y + 0.3,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "-=0.5"
+    )
+    .to(
+      letter6.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter6.position,
+      {
+        y: letter6.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    )
+
+    // Letter 7
+    .to(
+      letter7.position,
+      {
+        y: letter7.userData.initialPosition.y + 0.3,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "-=0.5"
+    )
+    .to(
+      letter7.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter7.position,
+      {
+        y: letter7.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    )
+
+    // Letter 8
+    .to(
+      letter8.position,
+      {
+        y: letter8.userData.initialPosition.y + 0.3,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "-=0.5"
+    )
+    .to(
+      letter8.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      "<"
+    )
+    .to(
+      letter8.position,
+      {
+        y: letter8.userData.initialPosition.y,
+        duration: 0.4,
+        ease: "back.out(1.8)",
+      },
+      ">-0.2"
+    );
+}
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#D9CAD1");

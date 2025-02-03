@@ -569,14 +569,14 @@ ul {
   li {
     &:before {
       @include themed() {
-        color: t("base-purple");
+        color: t("text");
       }
     }
 
     &:hover {
       &:before {
         @include themed() {
-          color: t("base-dark-purple");
+          color: t("base-purple");
         }
       }
     }
