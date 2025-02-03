@@ -566,22 +566,61 @@ scene.add(smoke);
 // Event Listeners
 const themeToggleButton = document.querySelector(".theme-toggle-button");
 const muteToggleButton = document.querySelector(".mute-toggle-button");
+const sunSvg = document.querySelector(".sun-svg");
+const moonSvg = document.querySelector(".moon-svg");
 
 let isNightMode = false;
+const handleThemeToggle = (e) => {
+  e.preventDefault();
+
+  const isDark = document.body.classList.contains("dark-theme");
+  document.body.classList.remove(isDark ? "dark-theme" : "light-theme");
+  document.body.classList.add(isDark ? "light-theme" : "dark-theme");
+
+  isNightMode = !isNightMode;
+  buttonSounds.click.play();
+
+  gsap.to(themeToggleButton, {
+    rotate: 45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStarte: () => {
+      // Switch SVGs
+      if (isNightMode) {
+        sunSvg.style.display = "none";
+        moonSvg.style.display = "block";
+      } else {
+        moonSvg.style.display = "none";
+        sunSvg.style.display = "block";
+      }
+
+      // Reset button transform
+      gsap.to(themeToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+      });
+    },
+  });
+
+  // Update room materials
+  Object.values(roomMaterials).forEach((material) => {
+    gsap.to(material.uniforms.uMixRatio, {
+      value: isNightMode ? 1 : 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+    });
+  });
+};
+
+// Click event listener
 themeToggleButton.addEventListener(
   "click",
   (e) => {
     if (touchHappened) return;
-    e.preventDefault();
-
-    isNightMode = !isNightMode;
-    Object.values(roomMaterials).forEach((material) => {
-      gsap.to(material.uniforms.uMixRatio, {
-        value: isNightMode ? 1 : 0,
-        duration: 1.5,
-        ease: "power2.inOut",
-      });
-    });
+    handleThemeToggle(e);
   },
   { passive: false }
 );
@@ -590,15 +629,7 @@ themeToggleButton.addEventListener(
   "touchend",
   (e) => {
     touchHappened = true;
-    e.preventDefault();
-    isNightMode = !isNightMode;
-    Object.values(roomMaterials).forEach((material) => {
-      gsap.to(material.uniforms.uMixRatio, {
-        value: isNightMode ? 1 : 0,
-        duration: 1.5,
-        ease: "power2.inOut",
-      });
-    });
+    handleThemeToggle(e);
   },
   { passive: false }
 );

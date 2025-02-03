@@ -3,6 +3,50 @@
 @use "./styles/variables.scss" as vars;
 @use "./styles/defaults.scss" as media;
 
+$themes: (
+  light: (
+    base-dark-purple: #6c3f7c,
+    base-purple: #6e5e9c,
+    base-purple-200: #cdb3d6,
+    base-pink: #eedfe4,
+    base-light-purple: #ead7ef,
+    text: #020202,
+    svgs: #6e5e9c,
+  ),
+  dark: (
+    base-dark-purple: #eac8f7,
+    base-purple: #1f0f4e,
+    base-purple-200: #62416d,
+    base-pink: #8b4e62,
+    base-light-purple: #401d49,
+    text: #fcfcfc,
+    svgs: #fcfcfc,
+  ),
+);
+
+// Theme mixins
+@mixin themed() {
+  @each $theme, $map in $themes {
+    .#{$theme}-theme & {
+      $theme-map: () !global;
+      @each $key, $value in $map {
+        $theme-map: map-merge(
+          $theme-map,
+          (
+            $key: $value,
+          )
+        ) !global;
+      }
+      @content;
+      $theme-map: null !global;
+    }
+  }
+}
+
+@function t($key) {
+  @return map-get($theme-map, $key);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -155,7 +199,6 @@ ul {
   border-radius: 25px;
   display: none;
   border: 8px solid vars.$base-purple;
-  background-color: vars.$base-light-purple;
 }
 
 .about {
@@ -504,4 +547,120 @@ ul {
 
 .sm-font {
   font-size: 1.2rem;
+}
+
+ul {
+  li {
+    &:before {
+      @include themed() {
+        color: t("base-purple");
+      }
+    }
+
+    &:hover {
+      &:before {
+        @include themed() {
+          color: t("base-dark-purple");
+        }
+      }
+    }
+  }
+}
+
+.base-image {
+  @include themed() {
+    border-color: t("base-purple");
+  }
+}
+
+.work-base-image {
+  @include themed() {
+    border-color: t("base-purple");
+  }
+}
+
+.overlay {
+  @include themed() {
+    background-color: t("overlay-bg");
+  }
+}
+
+.modal {
+  @include themed() {
+    border-color: t("base-purple");
+    background-color: t("base-light-purple");
+  }
+}
+
+.modal-title {
+  @include themed() {
+    color: t("base-dark-purple");
+    background-color: t("base-purple-200");
+  }
+}
+
+.modal-paragraph-header-2 {
+  @include themed() {
+    border-color: t("base-purple");
+  }
+}
+
+.modal-content-wrapper {
+  &::-webkit-scrollbar-track {
+    @include themed() {
+      background-color: t("scrollbar-track");
+    }
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @include themed() {
+      background-color: t("base-dark-purple");
+    }
+  }
+}
+
+.list-text,
+.list-text-2,
+.modal-paragraph-header,
+.modal-paragraph-header-2,
+.modal-title,
+.modal-paragraph-text {
+  @include themed() {
+    color: t("text");
+  }
+}
+
+.modal-exit-button {
+  @include themed() {
+    border-color: t("base-purple");
+    background-color: t("base-light-purple");
+  }
+}
+
+.exit-button-svg {
+  @include themed() {
+    color: t("svgs");
+  }
+}
+
+.toggle-buttons {
+  @include themed() {
+    border-color: t("base-purple");
+    background-color: t("base-light-purple");
+    color: t("base-purple");
+  }
+}
+
+.sound-svg,
+.sound-off-svg,
+.sun-svg,
+.github,
+.linkedin,
+.instagram,
+.mail,
+.moon-svg {
+  @include themed() {
+    stroke: t("svgs");
+    color: t("svgs");
+  }
 }
