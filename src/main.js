@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { OrbitControls } from "./utils/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import smokeVertexShader from "./shaders/smoke/vertex.glsl";
@@ -11,6 +11,14 @@ const canvas = document.querySelector("#experience-canvas");
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
+};
+
+const buttonSounds = {
+  click: new Howl({
+    src: ["/audio/sfx/click/bubble.ogg"],
+    preload: true,
+    volume: 0.5,
+  }),
 };
 
 const modals = {
@@ -51,6 +59,7 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
       touchHappened = true;
       e.preventDefault();
       const modal = e.target.closest(".modal");
+      buttonSounds.click.play();
       hideModal(modal);
     },
     { passive: false }
@@ -62,6 +71,7 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
       if (touchHappened) return;
       e.preventDefault();
       const modal = e.target.closest(".modal");
+      buttonSounds.click.play();
       hideModal(modal);
     },
     { passive: false }
@@ -291,6 +301,10 @@ function handleRaycasterInteraction() {
   if (currentIntersects.length > 0) {
     const object = currentIntersects[0].object;
 
+    if (object.name.includes("Button")) {
+      buttonSounds.click.play();
+    }
+
     Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
       if (object.name.includes(keyName)) {
         pianoSounds[soundKey].play();
@@ -367,6 +381,7 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
 
       if (child.name.includes("Chair_Top")) {
         chairTop = child;
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
       }
 
       if (child.name.includes("Hour_Hand")) {
@@ -409,6 +424,8 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
       } else if (child.name.includes("Screen")) {
         child.material = new THREE.MeshBasicMaterial({
           map: videoTexture,
+          transparent: true,
+          opacity: 0.9,
         });
       } else {
         Object.keys(textureMap).forEach((key) => {
@@ -451,6 +468,8 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
 });
 
 const scene = new THREE.Scene();
+scene.background = new THREE.Color("#D9CAD1");
+
 const camera = new THREE.PerspectiveCamera(
   35,
   sizes.width / sizes.height,
@@ -464,8 +483,16 @@ renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.minDistance = 5;
+controls.maxDistance = 45;
+controls.minPolarAngle = 0;
+controls.maxPolarAngle = Math.PI / 2;
+controls.minAzimuthAngle = 0;
+controls.maxAzimuthAngle = Math.PI / 2;
+
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
+
 controls.update();
 controls.target.set(
   -0.04451427016691359,
@@ -650,9 +677,22 @@ const render = (timestamp) => {
     fan.rotation.y += 0.04;
   });
 
+  // Chair
+  if (chairTop) {
+    const time = timestamp * 0.001;
+    const baseAmplitude = Math.PI / 8;
+
+    const rotationOffset =
+      baseAmplitude *
+      Math.sin(time * 0.5) *
+      (1 - Math.abs(Math.sin(time * 0.5)) * 0.3);
+
+    chairTop.rotation.y = chairTop.userData.initialRotation.y + rotationOffset;
+  }
+
   // Fish
   if (fish) {
-    const time = timestamp * 0.001;
+    const time = timestamp * 0.0015;
     const amplitude = 0.12;
     const position =
       amplitude * Math.sin(time) * (1 - Math.abs(Math.sin(time)) * 0.1);
