@@ -276,7 +276,7 @@ ul {
   flex-direction: row;
   gap: 18px;
   @include media.media("<=tablet") {
-    justify-content: start;
+    justify-content: space-between;
     flex-direction: column;
   }
 }
@@ -290,6 +290,7 @@ ul {
   justify-content: start;
   height: 100%;
   @include media.media("<=tablet") {
+    height: auto;
     width: 100%;
     padding-bottom: 24px;
   }
@@ -297,6 +298,7 @@ ul {
 
 .work-project-wrapper {
   width: 100%;
+  height: auto;
 }
 
 .contact .modal-content-wrapper {
