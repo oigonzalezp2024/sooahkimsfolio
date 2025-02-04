@@ -84,14 +84,33 @@ overlay.addEventListener(
 );
 
 document.querySelectorAll(".modal-exit-button").forEach((button) => {
+  function handleModalExit(e) {
+    e.preventDefault();
+    const modal = e.target.closest(".modal");
+
+    gsap.to(button, {
+      scale: 5,
+      duration: 0.5,
+      ease: "back.out(2)",
+      onStart: () => {
+        gsap.to(button, {
+          rotate: 0,
+          scale: 1,
+          duration: 0.5,
+          ease: "back.out(2)",
+        });
+      },
+    });
+
+    buttonSounds.click.play();
+    hideModal(modal);
+  }
+
   button.addEventListener(
     "touchend",
     (e) => {
       touchHappened = true;
-      e.preventDefault();
-      const modal = e.target.closest(".modal");
-      buttonSounds.click.play();
-      hideModal(modal);
+      handleModalExit(e);
     },
     { passive: false }
   );
@@ -100,10 +119,7 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
     "click",
     (e) => {
       if (touchHappened) return;
-      e.preventDefault();
-      const modal = e.target.closest(".modal");
-      buttonSounds.click.play();
-      hideModal(modal);
+      handleModalExit(e);
     },
     { passive: false }
   );
@@ -209,37 +225,32 @@ manager.onLoad = function () {
     "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
   let isDisabled = false;
 
+  function handleEnter() {
+    if (isDisabled) return;
+    loadingScreenButton.style.border = "8px solid #6e5e9c";
+    loadingScreenButton.style.background = "#ead7ef";
+    loadingScreenButton.style.color = "#6e5e9c";
+    loadingScreenButton.style.boxShadow = "none";
+    loadingScreenButton.textContent = "~ 안녕하세요 ~";
+    loadingScreen.style.background = "#ead7ef";
+    isDisabled = true;
+    backgroundMusic.play();
+    playReveal();
+  }
+
   loadingScreenButton.addEventListener("mouseenter", () => {
     loadingScreenButton.style.transform = "scale(1.3)";
   });
 
   loadingScreenButton.addEventListener("touchend", (e) => {
-    if (isDisabled) return;
     touchHappened = true;
     e.preventDefault();
-    loadingScreenButton.style.border = "8px solid #6e5e9c";
-    loadingScreenButton.style.background = "#ead7ef";
-    loadingScreenButton.style.color = "#6e5e9c";
-    loadingScreenButton.style.boxShadow = "none";
-    loadingScreenButton.textContent = "~ 안녕하세요 ~";
-    loadingScreen.style.background = "#ead7ef";
-    isDisabled = true;
-    backgroundMusic.play();
-    playReveal();
+    handleEnter();
   });
 
   loadingScreenButton.addEventListener("click", (e) => {
-    if (isDisabled) return;
     if (touchHappened) return;
-    loadingScreenButton.style.border = "8px solid #6e5e9c";
-    loadingScreenButton.style.background = "#ead7ef";
-    loadingScreenButton.style.color = "#6e5e9c";
-    loadingScreenButton.style.boxShadow = "none";
-    loadingScreenButton.textContent = "~ 안녕하세요 ~";
-    loadingScreen.style.background = "#ead7ef";
-    isDisabled = true;
-    backgroundMusic.play();
-    playReveal();
+    handleEnter();
   });
 
   loadingScreenButton.addEventListener("mouseleave", () => {
