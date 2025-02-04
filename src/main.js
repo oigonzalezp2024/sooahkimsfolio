@@ -9,6 +9,35 @@ import themeFragmentShader from "./shaders/theme/fragment.glsl";
 import gsap from "gsap";
 import { Howl } from "howler";
 
+let pianoDebounceTimer = null;
+let isMusicFaded = false;
+const MUSIC_FADE_TIME = 200;
+const PIANO_TIMEOUT = 4000;
+const BACKGROUND_MUSIC_VOLUME = 1;
+const FADED_VOLUME = 0;
+
+const fadeOutBackgroundMusic = () => {
+  if (!isMuted && !isMusicFaded) {
+    backgroundMusic.fade(
+      backgroundMusic.volume(),
+      FADED_VOLUME,
+      MUSIC_FADE_TIME
+    );
+    isMusicFaded = true;
+  }
+};
+
+const fadeInBackgroundMusic = () => {
+  if (!isMuted && isMusicFaded) {
+    backgroundMusic.fade(
+      FADED_VOLUME,
+      BACKGROUND_MUSIC_VOLUME,
+      MUSIC_FADE_TIME
+    );
+    isMusicFaded = false;
+  }
+};
+
 const canvas = document.querySelector("#experience-canvas");
 const sizes = {
   width: window.innerWidth,
@@ -158,6 +187,12 @@ const textureLoader = new THREE.TextureLoader();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("/draco/");
 
+const backgroundMusic = new Howl({
+  src: ["/audio/music/cosmic_candy.ogg"],
+  loop: true,
+  volume: 1,
+});
+
 const manager = new THREE.LoadingManager();
 
 const loadingScreen = document.querySelector(".loading-screen");
@@ -183,6 +218,7 @@ manager.onLoad = function () {
     loadingScreenButton.style.boxShadow = "none";
     loadingScreenButton.textContent = "~ 안녕하세요 ~";
     loadingScreen.style.background = "#ead7ef";
+    backgroundMusic.play();
     playReveal();
   });
 
@@ -191,6 +227,7 @@ manager.onLoad = function () {
     loadingScreenButton.style.boxShadow = "none";
     loadingScreenButton.textContent = "~ 안녕하세요 ~";
     loadingScreen.style.background = "#ead7ef";
+    backgroundMusic.play();
     playReveal();
   });
 
@@ -215,6 +252,7 @@ function playReveal() {
       duration: 1.2,
       ease: "back.in(1.8)",
       onComplete: () => {
+        playIntroAnimation();
         loadingScreen.remove();
       },
     },
@@ -309,7 +347,6 @@ const createMaterialForTextureSet = (textureSet) => {
     fragmentShader: themeFragmentShader,
   });
 
-  // Ensure all textures in the material have proper filtering
   Object.entries(material.uniforms).forEach(([key, uniform]) => {
     if (uniform.value instanceof THREE.Texture) {
       uniform.value.minFilter = THREE.LinearFilter;
@@ -414,7 +451,18 @@ function handleRaycasterInteraction() {
 
     Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
       if (object.name.includes(keyName)) {
+        if (pianoDebounceTimer) {
+          console.log("YOOO");
+          clearTimeout(pianoDebounceTimer);
+        }
+
+        fadeOutBackgroundMusic();
+
         pianoSounds[soundKey].play();
+
+        pianoDebounceTimer = setTimeout(() => {
+          fadeInBackgroundMusic();
+        }, PIANO_TIMEOUT);
 
         gsap.to(object.rotation, {
           x: object.userData.initialRotation.x + Math.PI / 42,
@@ -631,7 +679,6 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
   }
 
   scene.add(glb.scene);
-  playIntroAnimation();
 });
 
 function playIntroAnimation() {
@@ -734,7 +781,6 @@ function playIntroAnimation() {
   lettersTl.timeScale(0.8);
 
   lettersTl
-    // Letter 1
     .to(letter1.position, {
       y: letter1.userData.initialPosition.y + 0.3,
       duration: 0.4,
@@ -761,7 +807,6 @@ function playIntroAnimation() {
       ">-0.2"
     )
 
-    // Letter 2
     .to(
       letter2.position,
       {
@@ -792,7 +837,6 @@ function playIntroAnimation() {
       ">-0.2"
     )
 
-    // Letter 3
     .to(
       letter3.position,
       {
@@ -823,7 +867,6 @@ function playIntroAnimation() {
       ">-0.2"
     )
 
-    // Letter 4
     .to(
       letter4.position,
       {
@@ -854,7 +897,6 @@ function playIntroAnimation() {
       ">-0.2"
     )
 
-    // Letter 5
     .to(
       letter5.position,
       {
@@ -885,7 +927,6 @@ function playIntroAnimation() {
       ">-0.2"
     )
 
-    // Letter 6
     .to(
       letter6.position,
       {
@@ -916,7 +957,6 @@ function playIntroAnimation() {
       ">-0.2"
     )
 
-    // Letter 7
     .to(
       letter7.position,
       {
@@ -947,7 +987,6 @@ function playIntroAnimation() {
       ">-0.2"
     )
 
-    // Letter 8
     .to(
       letter8.position,
       {
@@ -1042,6 +1081,72 @@ const themeToggleButton = document.querySelector(".theme-toggle-button");
 const muteToggleButton = document.querySelector(".mute-toggle-button");
 const sunSvg = document.querySelector(".sun-svg");
 const moonSvg = document.querySelector(".moon-svg");
+const soundOffSvg = document.querySelector(".sound-off-svg");
+const soundOnSvg = document.querySelector(".sound-on-svg");
+
+const updateMuteState = (muted) => {
+  if (muted) {
+    backgroundMusic.volume(0);
+  } else {
+    const currentVolume = pianoDebounceTimer ? 0.1 : BACKGROUND_MUSIC_VOLUME;
+    backgroundMusic.volume(currentVolume);
+  }
+
+  buttonSounds.click.mute(muted);
+  Object.values(pianoSounds).forEach((sound) => {
+    sound.mute(muted);
+  });
+};
+
+const handleMuteToggle = (e) => {
+  e.preventDefault();
+
+  isMuted = !isMuted;
+  updateMuteState(isMuted);
+  buttonSounds.click.play();
+
+  gsap.to(muteToggleButton, {
+    rotate: -45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStart: () => {
+      if (!isMuted) {
+        soundOffSvg.style.display = "none";
+        soundOnSvg.style.display = "block";
+      } else {
+        soundOnSvg.style.display = "none";
+        soundOffSvg.style.display = "block";
+      }
+
+      gsap.to(muteToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+      });
+    },
+  });
+};
+
+let isMuted = false;
+muteToggleButton.addEventListener(
+  "click",
+  (e) => {
+    if (touchHappened) return;
+    handleMuteToggle(e);
+  },
+  { passive: false }
+);
+
+muteToggleButton.addEventListener(
+  "touchend",
+  (e) => {
+    touchHappened = true;
+    handleMuteToggle(e);
+  },
+  { passive: false }
+);
 
 let isNightMode = false;
 const handleThemeToggle = (e) => {
@@ -1060,7 +1165,6 @@ const handleThemeToggle = (e) => {
     duration: 0.5,
     ease: "back.out(2)",
     onStart: () => {
-      // Switch SVGs
       if (isNightMode) {
         sunSvg.style.display = "none";
         moonSvg.style.display = "block";
@@ -1069,7 +1173,6 @@ const handleThemeToggle = (e) => {
         sunSvg.style.display = "block";
       }
 
-      // Reset button transform
       gsap.to(themeToggleButton, {
         rotate: 0,
         scale: 1,
@@ -1079,7 +1182,6 @@ const handleThemeToggle = (e) => {
     },
   });
 
-  // Update room materials
   Object.values(roomMaterials).forEach((material) => {
     gsap.to(material.uniforms.uMixRatio, {
       value: isNightMode ? 1 : 0,
