@@ -1,8 +1,8 @@
-# Soo-ahs's Room Folio
+# 수아's Room Folio
 
 **[Live site](http://sooahs-room-folio.com/)**
 
-This repo contains code of Soo-ahs's Folio. If you're interested, learn how to create a porfolio like this [here](https://youtu.be/AB6sulUMRGE)!! It's beginner friendly!
+This repo contains code of 수아's Room Folio. If you're interested, learn how to create a porfolio like this [here](https://youtu.be/AB6sulUMRGE)!! It's beginner friendly!
 
 ![Page screenshot](/media/og-image.webp?raw=true "Page screenshot")
 
