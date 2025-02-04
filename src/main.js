@@ -1092,6 +1092,7 @@ controls.dampingFactor = 0.05;
 
 controls.update();
 
+//Set starting camera position
 if (window.innerWidth < 768) {
   camera.position.set(
     29.567116827654726,
@@ -1515,3 +1516,5 @@ const render = (timestamp) => {
 };
 
 render();
+
+//COMMENT LOL
