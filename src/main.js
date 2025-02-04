@@ -232,6 +232,7 @@ manager.onLoad = function () {
   function handleEnter() {
     if (isDisabled) return;
 
+    loadingScreenButton.style.cursor = "default";
     loadingScreenButton.style.border = "8px solid #6e5e9c";
     loadingScreenButton.style.background = "#ead7ef";
     loadingScreenButton.style.color = "#6e5e9c";
@@ -509,33 +510,33 @@ function handleRaycasterInteraction() {
 
         gsap.to(object.rotation, {
           x: object.userData.initialRotation.x + Math.PI / 42,
-          duration: 0.5,
+          duration: 0.4,
           ease: "back.out(2)",
           onComplete: () => {
             gsap.to(object.rotation, {
               x: object.userData.initialRotation.x,
-              duration: 0.2,
-              ease: "back.out(1.8)",
+              duration: 0.25,
+              ease: "back.out(2)",
             });
           },
         });
 
-        gsap.to(object.scale, {
-          x: object.userData.initialScale.x * 1.1,
-          y: object.userData.initialScale.y * 1.1,
-          // z: object.userData.initialScale.z * 1.1,
-          duration: 0.2,
-          ease: "back.out(1.8)",
-          onComplete: () => {
-            gsap.to(object.scale, {
-              x: object.userData.initialScale.x,
-              y: object.userData.initialScale.y,
-              // z: object.userData.initialScale.z,
-              duration: 0.2,
-              ease: "back.out(1.8)",
-            });
-          },
-        });
+        // gsap.to(object.scale, {
+        //   x: object.userData.initialScale.x * 1.8,
+        //   y: object.userData.initialScale.y * 1.8,
+        //   // z: object.userData.initialScale.z * 1.1,
+        //   duration: 0.2,
+        //   ease: "back.out(1.8)",
+        //   onComplete: () => {
+        //     gsap.to(object.scale, {
+        //       x: object.userData.initialScale.x,
+        //       y: object.userData.initialScale.y,
+        //       // z: object.userData.initialScale.z,
+        //       duration: 0.2,
+        //       ease: "back.out(1.8)",
+        //     });
+        //   },
+        // });
       }
     });
 
