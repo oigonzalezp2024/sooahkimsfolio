@@ -219,7 +219,6 @@ const loadingScreen = document.querySelector(".loading-screen");
 const loadingScreenButton = document.querySelector(".loading-screen-button");
 
 manager.onLoad = function () {
-  console.log(isModalOpen);
   loadingScreenButton.style.border = "8px solid #2a0f4e";
   loadingScreenButton.style.background = "#401d49";
   loadingScreenButton.style.color = "#e6dede";
@@ -582,9 +581,46 @@ let plank1,
 
 let letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8;
 
+let C1_Key,
+  Cs1_Key,
+  D1_Key,
+  Ds1_Key,
+  E1_Key,
+  F1_Key,
+  Fs1_Key,
+  G1_Key,
+  Gs1_Key,
+  A1_Key,
+  As1_Key,
+  B1_Key;
+let C2_Key,
+  Cs2_Key,
+  D2_Key,
+  Ds2_Key,
+  E2_Key,
+  F2_Key,
+  Fs2_Key,
+  G2_Key,
+  Gs2_Key,
+  A2_Key,
+  As2_Key,
+  B2_Key;
+
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
     if (child.isMesh) {
+      Object.keys(pianoKeyMap).forEach((keyName) => {
+        if (child.name.includes(keyName)) {
+          const varName = keyName.replace("#", "s").split("_")[0] + "_Key";
+          eval(`${varName} = child`);
+          console.log("HIII IS THIS WORKING THO");
+          child.scale.set(0, 0, 0);
+          child.userData.initialPosition = new THREE.Vector3().copy(
+            child.position
+          );
+        }
+      });
+
       if (child.name.includes("Fish_Fourth")) {
         fish = child;
         child.position.x += 0.04;
@@ -1062,6 +1098,74 @@ function playIntroAnimation() {
       },
       ">-0.2"
     );
+
+  const pianoKeysTl = gsap.timeline({
+    defaults: {
+      duration: 0.4,
+      ease: "back.out(1.7)",
+    },
+  });
+  pianoKeysTl.timeScale(1.2);
+
+  const pianoKeys = [
+    C1_Key,
+    Cs1_Key,
+    D1_Key,
+    Ds1_Key,
+    E1_Key,
+    F1_Key,
+    Fs1_Key,
+    G1_Key,
+    Gs1_Key,
+    A1_Key,
+    As1_Key,
+    B1_Key,
+    C2_Key,
+    Cs2_Key,
+    D2_Key,
+    Ds2_Key,
+    E2_Key,
+    F2_Key,
+    Fs2_Key,
+    G2_Key,
+    Gs2_Key,
+    A2_Key,
+    As2_Key,
+    B2_Key,
+  ];
+
+  pianoKeys.forEach((key, index) => {
+    pianoKeysTl
+      .to(
+        key.position,
+        {
+          y: key.userData.initialPosition.y + 0.2,
+          duration: 0.4,
+          ease: "back.out(1.8)",
+        },
+        index * 0.1
+      )
+      .to(
+        key.scale,
+        {
+          x: 1,
+          y: 1,
+          z: 1,
+          duration: 0.4,
+          ease: "back.out(1.8)",
+        },
+        "<"
+      )
+      .to(
+        key.position,
+        {
+          y: key.userData.initialPosition.y,
+          duration: 0.4,
+          ease: "back.out(1.8)",
+        },
+        ">-0.2"
+      );
+  });
 }
 
 const scene = new THREE.Scene();
