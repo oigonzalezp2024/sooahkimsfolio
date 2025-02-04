@@ -2,7 +2,7 @@
 
 **[Live site](http://sooahs-room-folio.com/)**
 
-This repo contains code of Soo-ahs's Folio. Learn how to create a porfolio like this [here](https://youtu.be/AB6sulUMRGE)!! It's beginner friendly!
+This repo contains code of Soo-ahs's Folio. If you're interested, learn how to create a porfolio like this [here](https://youtu.be/AB6sulUMRGE)!! It's beginner friendly!
 
 ![Page screenshot](/media/og-image.webp?raw=true "Page screenshot")
 
