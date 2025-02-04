@@ -129,7 +129,7 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
   );
 });
 
-let isModalOpen = false;
+let isModalOpen = true;
 
 const showModal = (modal) => {
   modal.style.display = "block";
@@ -297,6 +297,7 @@ function playReveal() {
       duration: 1.2,
       ease: "back.in(1.8)",
       onComplete: () => {
+        isModalOpen = false;
         playIntroAnimation();
         loadingScreen.remove();
       },
@@ -430,7 +431,8 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener(
   "touchstart",
   (e) => {
-    if (isModalOpen || stillIntro) return;
+    if (isModalOpen || !stillIntro) return;
+    console.log("BRO THIS IS HAPPENING");
     e.preventDefault();
     pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
     pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
@@ -441,7 +443,8 @@ window.addEventListener(
 window.addEventListener(
   "touchend",
   (e) => {
-    if (isModalOpen || stillIntro) return;
+    if (isModalOpen || !stillIntro) return;
+    console.log("BRO THIS IS HAPPENING");
     e.preventDefault();
     handleRaycasterInteraction();
   },
@@ -1456,6 +1459,7 @@ const render = (timestamp) => {
   if (chairTop) {
     const time = timestamp * 0.001;
     const baseAmplitude = Math.PI / 8;
+    chairTop.scale.set(1, 1, 1);
 
     const rotationOffset =
       baseAmplitude *
@@ -1475,7 +1479,7 @@ const render = (timestamp) => {
   }
 
   // Raycaster
-  if (!isModalOpen) {
+  if (!isModalOpen || !stillIntro) {
     raycaster.setFromCamera(pointer, camera);
 
     // calculate objects intersecting the picking ray
