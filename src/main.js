@@ -11,8 +11,8 @@ import { Howl } from "howler";
 
 let pianoDebounceTimer = null;
 let isMusicFaded = false;
-const MUSIC_FADE_TIME = 200;
-const PIANO_TIMEOUT = 4000;
+const MUSIC_FADE_TIME = 500;
+const PIANO_TIMEOUT = 2000;
 const BACKGROUND_MUSIC_VOLUME = 1;
 const FADED_VOLUME = 0;
 
@@ -199,34 +199,45 @@ const loadingScreen = document.querySelector(".loading-screen");
 const loadingScreenButton = document.querySelector(".loading-screen-button");
 
 manager.onLoad = function () {
-  loadingScreenButton.style.border = "8px solid #6e5e9c";
-  loadingScreenButton.style.background = "#ead7ef";
-  loadingScreenButton.style.color = "#6e5e9c";
+  loadingScreenButton.style.border = "8px solid #2a0f4e";
+  loadingScreenButton.style.background = "#401d49";
+  loadingScreenButton.style.color = "#e6dede";
   loadingScreenButton.style.boxShadow = "rgba(0, 0, 0, 0.24) 0px 3px 8px";
   loadingScreenButton.textContent = "Enter!";
   loadingScreenButton.style.cursor = "pointer";
   loadingScreenButton.style.transition =
     "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+  let isDisabled = false;
 
   loadingScreenButton.addEventListener("mouseenter", () => {
     loadingScreenButton.style.transform = "scale(1.3)";
   });
 
   loadingScreenButton.addEventListener("touchend", (e) => {
+    if (isDisabled) return;
     touchHappened = true;
     e.preventDefault();
+    loadingScreenButton.style.border = "8px solid #6e5e9c";
+    loadingScreenButton.style.background = "#ead7ef";
+    loadingScreenButton.style.color = "#6e5e9c";
     loadingScreenButton.style.boxShadow = "none";
     loadingScreenButton.textContent = "~ 안녕하세요 ~";
     loadingScreen.style.background = "#ead7ef";
+    isDisabled = true;
     backgroundMusic.play();
     playReveal();
   });
 
   loadingScreenButton.addEventListener("click", (e) => {
+    if (isDisabled) return;
     if (touchHappened) return;
+    loadingScreenButton.style.border = "8px solid #6e5e9c";
+    loadingScreenButton.style.background = "#ead7ef";
+    loadingScreenButton.style.color = "#6e5e9c";
     loadingScreenButton.style.boxShadow = "none";
     loadingScreenButton.textContent = "~ 안녕하세요 ~";
     loadingScreen.style.background = "#ead7ef";
+    isDisabled = true;
     backgroundMusic.play();
     playReveal();
   });
@@ -452,7 +463,6 @@ function handleRaycasterInteraction() {
     Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
       if (object.name.includes(keyName)) {
         if (pianoDebounceTimer) {
-          console.log("YOOO");
           clearTimeout(pianoDebounceTimer);
         }
 
@@ -541,8 +551,10 @@ let letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8;
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
     if (child.isMesh) {
-      if (child.name.includes("Fish")) {
+      if (child.name.includes("Fish_Fourth")) {
         fish = child;
+        child.position.x += 0.04;
+        child.position.z -= 0.03;
         child.userData.initialPosition = new THREE.Vector3().copy(
           child.position
         );
@@ -636,7 +648,7 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
         child.material = new THREE.MeshBasicMaterial({
           color: 0x558bc8,
           transparent: true,
-          opacity: 0.66,
+          opacity: 0.4,
           depthWrite: false,
         });
       } else if (child.name.includes("Glass")) {
@@ -1025,11 +1037,14 @@ const camera = new THREE.PerspectiveCamera(
   35,
   sizes.width / sizes.height,
   0.1,
-  1000
+  200
 );
-camera.position.set(18.308497815998255, 8.340313483552896, 16.733946926439422);
 
-const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true,
+  logarithmicDepthBuffer: true,
+});
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -1045,11 +1060,26 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 
 controls.update();
-controls.target.set(
-  -0.04451427016691359,
-  1.992258015338971,
-  -0.26919808674082935
-);
+
+if (window.innerWidth < 768) {
+  camera.position.set(
+    29.567116827654726,
+    14.018476147584705,
+    31.37040363900147
+  );
+  controls.target.set(
+    -0.08206262548844094,
+    3.3119233527087255,
+    -0.7433922282864018
+  );
+} else {
+  camera.position.set(17.49173098423395, 9.108969527553887, 17.850992894238058);
+  controls.target.set(
+    0.4624746759408973,
+    1.9719940043010387,
+    -0.8300979125494505
+  );
+}
 
 // Shader Stuffffffffff
 const smokeGeometry = new THREE.PlaneGeometry(1, 1, 16, 64);
@@ -1088,8 +1118,7 @@ const updateMuteState = (muted) => {
   if (muted) {
     backgroundMusic.volume(0);
   } else {
-    const currentVolume = pianoDebounceTimer ? 0.1 : BACKGROUND_MUSIC_VOLUME;
-    backgroundMusic.volume(currentVolume);
+    backgroundMusic.volume(BACKGROUND_MUSIC_VOLUME);
   }
 
   buttonSounds.click.mute(muted);
@@ -1224,6 +1253,7 @@ window.addEventListener("resize", () => {
 });
 
 function playHoverAnimation(object, isHovering) {
+  let scale = 1.4;
   gsap.killTweensOf(object.scale);
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
@@ -1249,12 +1279,17 @@ function playHoverAnimation(object, isHovering) {
     }
   }
 
+  //Random check YOLOOOOOOO
+  if (object.name.includes("Fish")) {
+    scale = 1.2;
+  }
+
   if (isHovering) {
     // Scale animation for all objects
     gsap.to(object.scale, {
-      x: object.userData.initialScale.x * 1.4,
-      y: object.userData.initialScale.y * 1.4,
-      z: object.userData.initialScale.z * 1.4,
+      x: object.userData.initialScale.x * scale,
+      y: object.userData.initialScale.y * scale,
+      z: object.userData.initialScale.z * scale,
       duration: 0.5,
       ease: "back.out(2)",
     });
@@ -1322,6 +1357,7 @@ function playHoverAnimation(object, isHovering) {
 }
 
 // Render
+//Lol trying out three.lcock and the built in timestamp lowkey use one for consistency not both XDDDDDD fr fr tho fr
 const clock = new THREE.Clock();
 
 const updateClockHands = () => {
