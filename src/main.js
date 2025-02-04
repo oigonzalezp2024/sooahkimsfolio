@@ -129,7 +129,7 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
   );
 });
 
-let isModalOpen = false;
+let isModalOpen = true;
 
 const showModal = (modal) => {
   modal.style.display = "block";
@@ -219,6 +219,7 @@ const loadingScreen = document.querySelector(".loading-screen");
 const loadingScreenButton = document.querySelector(".loading-screen-button");
 
 manager.onLoad = function () {
+  console.log(isModalOpen);
   loadingScreenButton.style.border = "8px solid #2a0f4e";
   loadingScreenButton.style.background = "#401d49";
   loadingScreenButton.style.color = "#e6dede";
@@ -295,6 +296,7 @@ function playReveal() {
       duration: 1.2,
       ease: "back.in(1.8)",
       onComplete: () => {
+        isModalOpen = false;
         playIntroAnimation();
         loadingScreen.remove();
       },

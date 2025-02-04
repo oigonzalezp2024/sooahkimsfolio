@@ -393,6 +393,7 @@ ul {
   }
 
   @include media.media("<=tablet") {
+    // Reset the top and left positions
     top: auto;
     left: 50%;
     bottom: -3rem;
