@@ -158,7 +158,71 @@ const textureLoader = new THREE.TextureLoader();
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("/draco/");
 
-const loader = new GLTFLoader();
+const manager = new THREE.LoadingManager();
+
+const loadingScreen = document.querySelector(".loading-screen");
+const loadingScreenButton = document.querySelector(".loading-screen-button");
+
+manager.onLoad = function () {
+  loadingScreenButton.style.border = "8px solid #6e5e9c";
+  loadingScreenButton.style.background = "#ead7ef";
+  loadingScreenButton.style.color = "#6e5e9c";
+  loadingScreenButton.style.boxShadow = "rgba(0, 0, 0, 0.24) 0px 3px 8px";
+  loadingScreenButton.textContent = "Enter!";
+  loadingScreenButton.style.cursor = "pointer";
+  loadingScreenButton.style.transition =
+    "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+
+  loadingScreenButton.addEventListener("mouseenter", () => {
+    loadingScreenButton.style.transform = "scale(1.3)";
+  });
+
+  loadingScreenButton.addEventListener("touchend", (e) => {
+    touchHappened = true;
+    e.preventDefault();
+    loadingScreenButton.style.boxShadow = "none";
+    loadingScreenButton.textContent = "~ 안녕하세요 ~";
+    loadingScreen.style.background = "#ead7ef";
+    playReveal();
+  });
+
+  loadingScreenButton.addEventListener("click", (e) => {
+    if (touchHappened) return;
+    loadingScreenButton.style.boxShadow = "none";
+    loadingScreenButton.textContent = "~ 안녕하세요 ~";
+    loadingScreen.style.background = "#ead7ef";
+    playReveal();
+  });
+
+  loadingScreenButton.addEventListener("mouseleave", () => {
+    loadingScreenButton.style.transform = "none";
+  });
+};
+
+function playReveal() {
+  const tl = gsap.timeline();
+
+  tl.to(loadingScreen, {
+    scale: 0.5,
+    duration: 1.2,
+    delay: 0.25,
+    ease: "back.in(1.8)",
+  }).to(
+    loadingScreen,
+    {
+      y: "200vh",
+      transform: "perspective(1000px) rotateX(45deg) rotateY(-35deg)",
+      duration: 1.2,
+      ease: "back.in(1.8)",
+      onComplete: () => {
+        loadingScreen.remove();
+      },
+    },
+    "-=0.1"
+  );
+}
+
+const loader = new GLTFLoader(manager);
 loader.setDRACOLoader(dracoLoader);
 
 const environmentMap = new THREE.CubeTextureLoader()
@@ -435,7 +499,7 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
           child.position
         );
       }
-      if (child.name.includes("Chair_Top_Raycaster_Third")) {
+      if (child.name.includes("Chair_Top")) {
         chairTop = child;
         child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
       }
@@ -469,7 +533,7 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
       // LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
       if (child.name.includes("Hanging_Plank_1")) {
         plank1 = child;
-        child.scale.set(0, 1, 0);
+        child.scale.set(0, 0, 1);
       } else if (child.name.includes("Hanging_Plank_2")) {
         plank2 = child;
         child.scale.set(0, 0, 0);
@@ -580,8 +644,8 @@ function playIntroAnimation() {
   t1.timeScale(0.8);
 
   t1.to(plank1.scale, {
-    z: 1,
     x: 1,
+    y: 1,
   })
     .to(
       plank2.scale,

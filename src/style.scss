@@ -471,6 +471,7 @@ ul {
   top: 36px;
   right: 148px;
   z-index: 2;
+
   cursor: pointer;
 
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -677,5 +678,42 @@ ul {
   @include themed() {
     stroke: t("svgs");
     color: t("svgs");
+  }
+}
+
+.loading-screen {
+  @include vars.centered;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 108vw;
+  height: 108vh;
+  margin-left: -54vw;
+  margin-top: -54vh;
+  overflow: hidden;
+  z-index: 999999;
+  border: 8px solid vars.$base-purple;
+  background-color: vars.$base-dark-purple;
+  transform: perspective(1000px);
+  border-radius: 48px;
+  // outline: 8px solid vars.$base-purple;
+  // outline-offset: 8px;
+}
+
+.loading-screen-button {
+  font-family: "Motley Forces";
+  @include vars.centered;
+  // border: 8px solid vars.$base-purple;
+  background-color: transparent;
+  padding: 10px 40px;
+  outline: none;
+  color: vars.$base-white;
+  border-radius: 1.2rem;
+  border: none;
+  font-size: 42px;
+  // box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+
+  @include media.media("<=tablet") {
+    font-size: 32px;
   }
 }
