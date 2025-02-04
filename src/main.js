@@ -609,18 +609,6 @@ let C2_Key,
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
     if (child.isMesh) {
-      Object.keys(pianoKeyMap).forEach((keyName) => {
-        if (child.name.includes(keyName)) {
-          const varName = keyName.replace("#", "s").split("_")[0] + "_Key";
-          eval(`${varName} = child`);
-          console.log("HIII IS THIS WORKING THO");
-          child.scale.set(0, 0, 0);
-          child.userData.initialPosition = new THREE.Vector3().copy(
-            child.position
-          );
-        }
-      });
-
       if (child.name.includes("Fish_Fourth")) {
         fish = child;
         child.position.x += 0.04;
@@ -713,6 +701,17 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
         letter8 = child;
         child.scale.set(0, 0, 0);
       }
+      Object.keys(pianoKeyMap).forEach((keyName) => {
+        if (child.name.includes(keyName)) {
+          const varName = keyName.replace("#", "s").split("_")[0] + "_Key";
+          eval(`${varName} = child`);
+          console.log("HIII IS THIS WORKING THO");
+          child.scale.set(0, 0, 0);
+          child.userData.initialPosition = new THREE.Vector3().copy(
+            child.position
+          );
+        }
+      });
 
       if (child.name.includes("Water")) {
         child.material = new THREE.MeshBasicMaterial({
