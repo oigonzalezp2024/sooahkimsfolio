@@ -4,7 +4,7 @@
 
 This repo contains code of 수아's Room Folio. If you're interested, learn how to create a porfolio like this [here](https://youtu.be/AB6sulUMRGE)!! It's beginner friendly!
 
-![Page screenshot](/media/og-image.webp?raw=true "Page screenshot")
+![Page screenshot](public/media/og-image.webp?raw=true "Page screenshot")
 
 # Updates!!!
 
