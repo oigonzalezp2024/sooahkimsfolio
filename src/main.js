@@ -94,10 +94,15 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
       ease: "back.out(2)",
       onStart: () => {
         gsap.to(button, {
-          rotate: 0,
+          rotate: -15,
           scale: 1,
           duration: 0.5,
           ease: "back.out(2)",
+          onComplete: () => {
+            gsap.set(button, {
+              clearProps: "all",
+            });
+          },
         });
       },
     });
