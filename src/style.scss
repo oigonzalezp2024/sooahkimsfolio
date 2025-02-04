@@ -696,14 +696,11 @@ ul {
   background-color: #2a0f4e;
   transform: perspective(1000px);
   border-radius: 48px;
-  // outline: 8px solid vars.$base-purple;
-  // outline-offset: 8px;
 }
 
 .loading-screen-button {
   font-family: "Motley Forces";
   @include vars.centered;
-  // border: 8px solid vars.$base-purple;
   background-color: transparent;
   padding: 10px 40px;
   outline: none;
@@ -711,7 +708,6 @@ ul {
   border-radius: 1.2rem;
   border: none;
   font-size: 42px;
-  // box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
   @include media.media("<=tablet") {
     font-size: 32px;

@@ -129,7 +129,7 @@ document.querySelectorAll(".modal-exit-button").forEach((button) => {
   );
 });
 
-let isModalOpen = true;
+let isModalOpen = false;
 
 const showModal = (modal) => {
   modal.style.display = "block";
@@ -217,7 +217,6 @@ const manager = new THREE.LoadingManager();
 
 const loadingScreen = document.querySelector(".loading-screen");
 const loadingScreenButton = document.querySelector(".loading-screen-button");
-let stillIntro = true;
 
 manager.onLoad = function () {
   loadingScreenButton.style.border = "8px solid #2a0f4e";
@@ -233,7 +232,6 @@ manager.onLoad = function () {
   function handleEnter() {
     if (isDisabled) return;
 
-    stillIntro = false;
     loadingScreenButton.style.border = "8px solid #6e5e9c";
     loadingScreenButton.style.background = "#ead7ef";
     loadingScreenButton.style.color = "#6e5e9c";
@@ -297,7 +295,6 @@ function playReveal() {
       duration: 1.2,
       ease: "back.in(1.8)",
       onComplete: () => {
-        isModalOpen = false;
         playIntroAnimation();
         loadingScreen.remove();
       },
@@ -431,8 +428,7 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener(
   "touchstart",
   (e) => {
-    if (isModalOpen || !stillIntro) return;
-    console.log("BRO THIS IS HAPPENING");
+    if (isModalOpen) return;
     e.preventDefault();
     pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
     pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
@@ -443,8 +439,7 @@ window.addEventListener(
 window.addEventListener(
   "touchend",
   (e) => {
-    if (isModalOpen || !stillIntro) return;
-    console.log("BRO THIS IS HAPPENING");
+    if (isModalOpen) return;
     e.preventDefault();
     handleRaycasterInteraction();
   },
@@ -1459,7 +1454,6 @@ const render = (timestamp) => {
   if (chairTop) {
     const time = timestamp * 0.001;
     const baseAmplitude = Math.PI / 8;
-    chairTop.scale.set(1, 1, 1);
 
     const rotationOffset =
       baseAmplitude *
@@ -1479,7 +1473,7 @@ const render = (timestamp) => {
   }
 
   // Raycaster
-  if (!isModalOpen || !stillIntro) {
+  if (!isModalOpen) {
     raycaster.setFromCamera(pointer, camera);
 
     // calculate objects intersecting the picking ray
