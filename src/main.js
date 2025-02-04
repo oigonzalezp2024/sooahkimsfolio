@@ -234,6 +234,22 @@ manager.onLoad = function () {
     loadingScreenButton.textContent = "~ 안녕하세요 ~";
     loadingScreen.style.background = "#ead7ef";
     isDisabled = true;
+
+    document.querySelector(
+      'link[sizes="96x96"]'
+    ).href = `media/light-favicon/favicon-96x96.png`;
+    document.querySelector(
+      'link[type="image/svg+xml"]'
+    ).href = `/media/light-favicon/favicon.svg`;
+    document.querySelector(
+      'link[rel="shortcut icon"]'
+    ).href = `media/light-favicon/favicon.ico`;
+    document.querySelector(
+      'link[rel="apple-touch-icon"]'
+    ).href = `media/light-favicon/apple-touch-icon.png`;
+    document.querySelector(
+      'link[rel="manifest"]'
+    ).href = `media/light-favicon/site.webmanifest`;
     backgroundMusic.play();
     playReveal();
   }
