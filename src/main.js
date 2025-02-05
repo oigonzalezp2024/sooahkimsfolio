@@ -9,19 +9,12 @@ import themeFragmentShader from "./shaders/theme/fragment.glsl";
 import gsap from "gsap";
 import { Howl } from "howler";
 
-// -------------------------- Audio setup --------------------------
 let pianoDebounceTimer = null;
 let isMusicFaded = false;
 const MUSIC_FADE_TIME = 500;
 const PIANO_TIMEOUT = 2000;
 const BACKGROUND_MUSIC_VOLUME = 1;
 const FADED_VOLUME = 0;
-
-const backgroundMusic = new Howl({
-  src: ["/audio/music/cosmic_candy.ogg"],
-  loop: true,
-  volume: 1,
-});
 
 const fadeOutBackgroundMusic = () => {
   if (!isMuted && !isMusicFaded) {
@@ -52,6 +45,395 @@ const buttonSounds = {
     volume: 0.5,
   }),
 };
+
+const canvas = document.querySelector("#experience-canvas");
+const sizes = {
+  width: window.innerWidth,
+  height: window.innerHeight,
+};
+
+// Modal
+const modals = {
+  work: document.querySelector(".modal.work"),
+  about: document.querySelector(".modal.about"),
+  contact: document.querySelector(".modal.contact"),
+};
+
+const overlay = document.querySelector(".overlay");
+
+let touchHappened = false;
+overlay.addEventListener(
+  "touchend",
+  (e) => {
+    touchHappened = true;
+    e.preventDefault();
+    const modal = document.querySelector('.modal[style*="display: block"]');
+    if (modal) hideModal(modal);
+  },
+  { passive: false }
+);
+
+overlay.addEventListener(
+  "click",
+  (e) => {
+    if (touchHappened) return;
+    e.preventDefault();
+    const modal = document.querySelector('.modal[style*="display: block"]');
+    if (modal) hideModal(modal);
+  },
+  { passive: false }
+);
+
+document.querySelectorAll(".modal-exit-button").forEach((button) => {
+  function handleModalExit(e) {
+    e.preventDefault();
+    const modal = e.target.closest(".modal");
+
+    gsap.to(button, {
+      scale: 5,
+      duration: 0.5,
+      ease: "back.out(2)",
+      onStart: () => {
+        gsap.to(button, {
+          scale: 1,
+          duration: 0.5,
+          ease: "back.out(2)",
+          onComplete: () => {
+            gsap.set(button, {
+              clearProps: "all",
+            });
+          },
+        });
+      },
+    });
+
+    buttonSounds.click.play();
+    hideModal(modal);
+  }
+
+  button.addEventListener(
+    "touchend",
+    (e) => {
+      touchHappened = true;
+      handleModalExit(e);
+    },
+    { passive: false }
+  );
+
+  button.addEventListener(
+    "click",
+    (e) => {
+      if (touchHappened) return;
+      handleModalExit(e);
+    },
+    { passive: false }
+  );
+});
+
+let isModalOpen = true;
+
+const showModal = (modal) => {
+  modal.style.display = "block";
+  overlay.style.display = "block";
+
+  isModalOpen = true;
+  controls.enabled = false;
+
+  if (currentHoveredObject) {
+    playHoverAnimation(currentHoveredObject, false);
+    currentHoveredObject = null;
+  }
+  document.body.style.cursor = "default";
+  currentIntersects = [];
+
+  gsap.set(modal, {
+    opacity: 0,
+    scale: 0,
+  });
+  gsap.set(overlay, {
+    opacity: 0,
+  });
+
+  gsap.to(overlay, {
+    opacity: 1,
+    duration: 0.5,
+  });
+
+  gsap.to(modal, {
+    opacity: 1,
+    scale: 1,
+    duration: 0.5,
+    ease: "back.out(2)",
+  });
+};
+
+const hideModal = (modal) => {
+  isModalOpen = false;
+  controls.enabled = true;
+
+  gsap.to(overlay, {
+    opacity: 0,
+    duration: 0.5,
+  });
+
+  gsap.to(modal, {
+    opacity: 0,
+    scale: 0,
+    duration: 0.5,
+    ease: "back.in(2)",
+    onComplete: () => {
+      modal.style.display = "none";
+      overlay.style.display = "none";
+    },
+  });
+};
+
+const raycasterObjects = [];
+let currentIntersects = [];
+let currentHoveredObject = null;
+
+const socialLinks = {
+  GitHub: "https://github.com/",
+  YouTube: "https://www.youtube.com/",
+  Twitter: "https://www.twitter.com/",
+};
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
+// Loaders
+const textureLoader = new THREE.TextureLoader();
+
+// Model Loaders
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("/draco/");
+
+const backgroundMusic = new Howl({
+  src: ["/audio/music/cosmic_candy.ogg"],
+  loop: true,
+  volume: 1,
+});
+
+const manager = new THREE.LoadingManager();
+
+const loadingScreen = document.querySelector(".loading-screen");
+const loadingScreenButton = document.querySelector(".loading-screen-button");
+
+manager.onLoad = function () {
+  loadingScreenButton.style.border = "8px solid #2a0f4e";
+  loadingScreenButton.style.background = "#401d49";
+  loadingScreenButton.style.color = "#e6dede";
+  loadingScreenButton.style.boxShadow = "rgba(0, 0, 0, 0.24) 0px 3px 8px";
+  loadingScreenButton.textContent = "Enter!";
+  loadingScreenButton.style.cursor = "pointer";
+  loadingScreenButton.style.transition =
+    "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+  let isDisabled = false;
+
+  function handleEnter() {
+    if (isDisabled) return;
+
+    loadingScreenButton.style.cursor = "default";
+    loadingScreenButton.style.border = "8px solid #6e5e9c";
+    loadingScreenButton.style.background = "#ead7ef";
+    loadingScreenButton.style.color = "#6e5e9c";
+    loadingScreenButton.style.boxShadow = "none";
+    loadingScreenButton.textContent = "~ 안녕하세요 ~";
+    loadingScreen.style.background = "#ead7ef";
+    isDisabled = true;
+
+    toggleFavicons();
+    backgroundMusic.play();
+    playReveal();
+  }
+
+  loadingScreenButton.addEventListener("mouseenter", () => {
+    loadingScreenButton.style.transform = "scale(1.3)";
+  });
+
+  loadingScreenButton.addEventListener("touchend", (e) => {
+    touchHappened = true;
+    e.preventDefault();
+    handleEnter();
+  });
+
+  loadingScreenButton.addEventListener("click", (e) => {
+    if (touchHappened) return;
+    handleEnter();
+  });
+
+  loadingScreenButton.addEventListener("mouseleave", () => {
+    loadingScreenButton.style.transform = "none";
+  });
+};
+
+function playReveal() {
+  const tl = gsap.timeline();
+
+  tl.to(loadingScreen, {
+    scale: 0.5,
+    duration: 1.2,
+    delay: 0.25,
+    ease: "back.in(1.8)",
+  }).to(
+    loadingScreen,
+    {
+      y: "200vh",
+      transform: "perspective(1000px) rotateX(45deg) rotateY(-35deg)",
+      duration: 1.2,
+      ease: "back.in(1.8)",
+      onComplete: () => {
+        isModalOpen = false;
+        playIntroAnimation();
+        loadingScreen.remove();
+      },
+    },
+    "-=0.1"
+  );
+}
+
+const loader = new GLTFLoader(manager);
+loader.setDRACOLoader(dracoLoader);
+
+const environmentMap = new THREE.CubeTextureLoader()
+  .setPath("textures/skybox/")
+  .load(["px.webp", "nx.webp", "py.webp", "ny.webp", "pz.webp", "nz.webp"]);
+
+const textureMap = {
+  First: {
+    day: "/textures/room/day/first_texture_set_day.webp",
+    night: "/textures/room/night/first_texture_set_night.webp",
+  },
+  Second: {
+    day: "/textures/room/day/second_texture_set_day.webp",
+    night: "/textures/room/night/second_texture_set_night.webp",
+  },
+  Third: {
+    day: "/textures/room/day/third_texture_set_day.webp",
+    night: "/textures/room/night/third_texture_set_night.webp",
+  },
+  Fourth: {
+    day: "/textures/room/day/fourth_texture_set_day.webp",
+    night: "/textures/room/night/fourth_texture_set_night.webp",
+  },
+};
+
+const loadedTextures = {
+  day: {},
+  night: {},
+};
+
+Object.entries(textureMap).forEach(([key, paths]) => {
+  // Load and configure day texture
+  const dayTexture = textureLoader.load(paths.day);
+  dayTexture.flipY = false;
+  dayTexture.colorSpace = THREE.SRGBColorSpace;
+  dayTexture.minFilter = THREE.LinearFilter;
+  dayTexture.magFilter = THREE.LinearFilter;
+  loadedTextures.day[key] = dayTexture;
+
+  // Load and configure night texture
+  const nightTexture = textureLoader.load(paths.night);
+  nightTexture.flipY = false;
+  nightTexture.colorSpace = THREE.SRGBColorSpace;
+  nightTexture.minFilter = THREE.LinearFilter;
+  nightTexture.magFilter = THREE.LinearFilter;
+  loadedTextures.night[key] = nightTexture;
+});
+
+// Reuseable Materials
+const glassMaterial = new THREE.MeshPhysicalMaterial({
+  transmission: 1,
+  opacity: 1,
+  color: 0xfbfbfb,
+  metalness: 0,
+  roughness: 0,
+  ior: 3,
+  thickness: 0.01,
+  specularIntensity: 1,
+  envMap: environmentMap,
+  envMapIntensity: 1,
+  depthWrite: false,
+  specularColor: 0xfbfbfb,
+});
+
+const whiteMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffffff,
+});
+
+const createMaterialForTextureSet = (textureSet) => {
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uDayTexture1: { value: loadedTextures.day.First },
+      uNightTexture1: { value: loadedTextures.night.First },
+      uDayTexture2: { value: loadedTextures.day.Second },
+      uNightTexture2: { value: loadedTextures.night.Second },
+      uDayTexture3: { value: loadedTextures.day.Third },
+      uNightTexture3: { value: loadedTextures.night.Third },
+      uDayTexture4: { value: loadedTextures.day.Fourth },
+      uNightTexture4: { value: loadedTextures.night.Fourth },
+      uMixRatio: { value: 0 },
+      uTextureSet: { value: textureSet },
+    },
+    vertexShader: themeVertexShader,
+    fragmentShader: themeFragmentShader,
+  });
+
+  Object.entries(material.uniforms).forEach(([key, uniform]) => {
+    if (uniform.value instanceof THREE.Texture) {
+      uniform.value.minFilter = THREE.LinearFilter;
+      uniform.value.magFilter = THREE.LinearFilter;
+    }
+  });
+
+  return material;
+};
+
+const roomMaterials = {
+  First: createMaterialForTextureSet(1),
+  Second: createMaterialForTextureSet(2),
+  Third: createMaterialForTextureSet(3),
+  Fourth: createMaterialForTextureSet(4),
+};
+
+const videoElement = document.createElement("video");
+videoElement.src = "/textures/video/Screen.mp4";
+videoElement.loop = true;
+videoElement.muted = true;
+videoElement.playsInline = true;
+videoElement.autoplay = true;
+videoElement.play();
+
+const videoTexture = new THREE.VideoTexture(videoElement);
+videoTexture.colorSpace = THREE.SRGBColorSpace;
+videoTexture.flipY = false;
+
+window.addEventListener("mousemove", (e) => {
+  touchHappened = false;
+  pointer.x = (e.clientX / sizes.width) * 2 - 1;
+  pointer.y = -(e.clientY / sizes.height) * 2 + 1;
+});
+
+window.addEventListener(
+  "touchstart",
+  (e) => {
+    if (isModalOpen) return;
+    e.preventDefault();
+    pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
+    pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
+  },
+  { passive: false }
+);
+
+window.addEventListener(
+  "touchend",
+  (e) => {
+    if (isModalOpen) return;
+    e.preventDefault();
+    handleRaycasterInteraction();
+  },
+  { passive: false }
+);
 
 // Piano key mapping
 const pianoKeyMap = {
@@ -89,393 +471,6 @@ Object.values(pianoKeyMap).forEach((soundKey) => {
     preload: true,
     volume: 0.5,
   });
-
-  // -------------------------- Scene setup --------------------------
-  const canvas = document.querySelector("#experience-canvas");
-  const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-  };
-
-  // -------------------------- Modal stuff --------------------------
-  const modals = {
-    work: document.querySelector(".modal.work"),
-    about: document.querySelector(".modal.about"),
-    contact: document.querySelector(".modal.contact"),
-  };
-
-  const overlay = document.querySelector(".overlay");
-
-  let touchHappened = false;
-  overlay.addEventListener(
-    "touchend",
-    (e) => {
-      touchHappened = true;
-      e.preventDefault();
-      const modal = document.querySelector('.modal[style*="display: block"]');
-      if (modal) hideModal(modal);
-    },
-    { passive: false }
-  );
-
-  overlay.addEventListener(
-    "click",
-    (e) => {
-      if (touchHappened) return;
-      e.preventDefault();
-      const modal = document.querySelector('.modal[style*="display: block"]');
-      if (modal) hideModal(modal);
-    },
-    { passive: false }
-  );
-
-  document.querySelectorAll(".modal-exit-button").forEach((button) => {
-    function handleModalExit(e) {
-      e.preventDefault();
-      const modal = e.target.closest(".modal");
-
-      gsap.to(button, {
-        scale: 5,
-        duration: 0.5,
-        ease: "back.out(2)",
-        onStart: () => {
-          gsap.to(button, {
-            scale: 1,
-            duration: 0.5,
-            ease: "back.out(2)",
-            onComplete: () => {
-              gsap.set(button, {
-                clearProps: "all",
-              });
-            },
-          });
-        },
-      });
-
-      buttonSounds.click.play();
-      hideModal(modal);
-    }
-
-    button.addEventListener(
-      "touchend",
-      (e) => {
-        touchHappened = true;
-        handleModalExit(e);
-      },
-      { passive: false }
-    );
-
-    button.addEventListener(
-      "click",
-      (e) => {
-        if (touchHappened) return;
-        handleModalExit(e);
-      },
-      { passive: false }
-    );
-  });
-
-  let isModalOpen = true;
-
-  const showModal = (modal) => {
-    modal.style.display = "block";
-    overlay.style.display = "block";
-
-    isModalOpen = true;
-    controls.enabled = false;
-
-    if (currentHoveredObject) {
-      playHoverAnimation(currentHoveredObject, false);
-      currentHoveredObject = null;
-    }
-    document.body.style.cursor = "default";
-    currentIntersects = [];
-
-    gsap.set(modal, {
-      opacity: 0,
-      scale: 0,
-    });
-    gsap.set(overlay, {
-      opacity: 0,
-    });
-
-    gsap.to(overlay, {
-      opacity: 1,
-      duration: 0.5,
-    });
-
-    gsap.to(modal, {
-      opacity: 1,
-      scale: 1,
-      duration: 0.5,
-      ease: "back.out(2)",
-    });
-  };
-
-  const hideModal = (modal) => {
-    isModalOpen = false;
-    controls.enabled = true;
-
-    gsap.to(overlay, {
-      opacity: 0,
-      duration: 0.5,
-    });
-
-    gsap.to(modal, {
-      opacity: 0,
-      scale: 0,
-      duration: 0.5,
-      ease: "back.in(2)",
-      onComplete: () => {
-        modal.style.display = "none";
-        overlay.style.display = "none";
-      },
-    });
-  };
-
-  // -------------------------- Raycaster Stuff --------------------------
-
-  const raycasterObjects = [];
-  let currentIntersects = [];
-  let currentHoveredObject = null;
-
-  const socialLinks = {
-    GitHub: "https://github.com/",
-    YouTube: "https://www.youtube.com/",
-    Twitter: "https://www.twitter.com/",
-  };
-
-  const raycaster = new THREE.Raycaster();
-  const pointer = new THREE.Vector2();
-
-  // -------------------------- Loaders and Loading Screen Stuff --------------------------
-  const textureLoader = new THREE.TextureLoader();
-
-  const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath("/draco/");
-
-  const manager = new THREE.LoadingManager();
-
-  const loadingScreen = document.querySelector(".loading-screen");
-  const loadingScreenButton = document.querySelector(".loading-screen-button");
-
-  manager.onLoad = function () {
-    loadingScreenButton.style.border = "8px solid #2a0f4e";
-    loadingScreenButton.style.background = "#401d49";
-    loadingScreenButton.style.color = "#e6dede";
-    loadingScreenButton.style.boxShadow = "rgba(0, 0, 0, 0.24) 0px 3px 8px";
-    loadingScreenButton.textContent = "Enter!";
-    loadingScreenButton.style.cursor = "pointer";
-    loadingScreenButton.style.transition =
-      "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
-    let isDisabled = false;
-
-    function handleEnter() {
-      if (isDisabled) return;
-
-      loadingScreenButton.style.cursor = "default";
-      loadingScreenButton.style.border = "8px solid #6e5e9c";
-      loadingScreenButton.style.background = "#ead7ef";
-      loadingScreenButton.style.color = "#6e5e9c";
-      loadingScreenButton.style.boxShadow = "none";
-      loadingScreenButton.textContent = "~ 안녕하세요 ~";
-      loadingScreen.style.background = "#ead7ef";
-      isDisabled = true;
-
-      toggleFavicons();
-      backgroundMusic.play();
-      playReveal();
-    }
-
-    loadingScreenButton.addEventListener("mouseenter", () => {
-      loadingScreenButton.style.transform = "scale(1.3)";
-    });
-
-    loadingScreenButton.addEventListener("touchend", (e) => {
-      touchHappened = true;
-      e.preventDefault();
-      handleEnter();
-    });
-
-    loadingScreenButton.addEventListener("click", (e) => {
-      if (touchHappened) return;
-      handleEnter();
-    });
-
-    loadingScreenButton.addEventListener("mouseleave", () => {
-      loadingScreenButton.style.transform = "none";
-    });
-  };
-
-  function playReveal() {
-    const tl = gsap.timeline();
-
-    tl.to(loadingScreen, {
-      scale: 0.5,
-      duration: 1.2,
-      delay: 0.25,
-      ease: "back.in(1.8)",
-    }).to(
-      loadingScreen,
-      {
-        y: "200vh",
-        transform: "perspective(1000px) rotateX(45deg) rotateY(-35deg)",
-        duration: 1.2,
-        ease: "back.in(1.8)",
-        onComplete: () => {
-          isModalOpen = false;
-          playIntroAnimation();
-          loadingScreen.remove();
-        },
-      },
-      "-=0.1"
-    );
-  }
-
-  const loader = new GLTFLoader(manager);
-  loader.setDRACOLoader(dracoLoader);
-
-  // -------------------------- Even more textures and materials setup --------------------------
-
-  const environmentMap = new THREE.CubeTextureLoader()
-    .setPath("textures/skybox/")
-    .load(["px.webp", "nx.webp", "py.webp", "ny.webp", "pz.webp", "nz.webp"]);
-
-  const textureMap = {
-    First: {
-      day: "/textures/room/day/first_texture_set_day.webp",
-      night: "/textures/room/night/first_texture_set_night.webp",
-    },
-    Second: {
-      day: "/textures/room/day/second_texture_set_day.webp",
-      night: "/textures/room/night/second_texture_set_night.webp",
-    },
-    Third: {
-      day: "/textures/room/day/third_texture_set_day.webp",
-      night: "/textures/room/night/third_texture_set_night.webp",
-    },
-    Fourth: {
-      day: "/textures/room/day/fourth_texture_set_day.webp",
-      night: "/textures/room/night/fourth_texture_set_night.webp",
-    },
-  };
-
-  const loadedTextures = {
-    day: {},
-    night: {},
-  };
-
-  Object.entries(textureMap).forEach(([key, paths]) => {
-    // Load and configure day texture
-    const dayTexture = textureLoader.load(paths.day);
-    dayTexture.flipY = false;
-    dayTexture.colorSpace = THREE.SRGBColorSpace;
-    dayTexture.minFilter = THREE.LinearFilter;
-    dayTexture.magFilter = THREE.LinearFilter;
-    loadedTextures.day[key] = dayTexture;
-
-    // Load and configure night texture
-    const nightTexture = textureLoader.load(paths.night);
-    nightTexture.flipY = false;
-    nightTexture.colorSpace = THREE.SRGBColorSpace;
-    nightTexture.minFilter = THREE.LinearFilter;
-    nightTexture.magFilter = THREE.LinearFilter;
-    loadedTextures.night[key] = nightTexture;
-  });
-
-  // Reuseable Materials
-  const glassMaterial = new THREE.MeshPhysicalMaterial({
-    transmission: 1,
-    opacity: 1,
-    color: 0xfbfbfb,
-    metalness: 0,
-    roughness: 0,
-    ior: 3,
-    thickness: 0.01,
-    specularIntensity: 1,
-    envMap: environmentMap,
-    envMapIntensity: 1,
-    depthWrite: false,
-    specularColor: 0xfbfbfb,
-  });
-
-  const whiteMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffffff,
-  });
-
-  const createMaterialForTextureSet = (textureSet) => {
-    const material = new THREE.ShaderMaterial({
-      uniforms: {
-        uDayTexture1: { value: loadedTextures.day.First },
-        uNightTexture1: { value: loadedTextures.night.First },
-        uDayTexture2: { value: loadedTextures.day.Second },
-        uNightTexture2: { value: loadedTextures.night.Second },
-        uDayTexture3: { value: loadedTextures.day.Third },
-        uNightTexture3: { value: loadedTextures.night.Third },
-        uDayTexture4: { value: loadedTextures.day.Fourth },
-        uNightTexture4: { value: loadedTextures.night.Fourth },
-        uMixRatio: { value: 0 },
-        uTextureSet: { value: textureSet },
-      },
-      vertexShader: themeVertexShader,
-      fragmentShader: themeFragmentShader,
-    });
-
-    Object.entries(material.uniforms).forEach(([key, uniform]) => {
-      if (uniform.value instanceof THREE.Texture) {
-        uniform.value.minFilter = THREE.LinearFilter;
-        uniform.value.magFilter = THREE.LinearFilter;
-      }
-    });
-
-    return material;
-  };
-
-  const roomMaterials = {
-    First: createMaterialForTextureSet(1),
-    Second: createMaterialForTextureSet(2),
-    Third: createMaterialForTextureSet(3),
-    Fourth: createMaterialForTextureSet(4),
-  };
-
-  const videoElement = document.createElement("video");
-  videoElement.src = "/textures/video/Screen.mp4";
-  videoElement.loop = true;
-  videoElement.muted = true;
-  videoElement.playsInline = true;
-  videoElement.autoplay = true;
-  videoElement.play();
-
-  const videoTexture = new THREE.VideoTexture(videoElement);
-  videoTexture.colorSpace = THREE.SRGBColorSpace;
-  videoTexture.flipY = false;
-
-  window.addEventListener("mousemove", (e) => {
-    touchHappened = false;
-    pointer.x = (e.clientX / sizes.width) * 2 - 1;
-    pointer.y = -(e.clientY / sizes.height) * 2 + 1;
-  });
-
-  window.addEventListener(
-    "touchstart",
-    (e) => {
-      if (isModalOpen) return;
-      e.preventDefault();
-      pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
-      pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
-    },
-    { passive: false }
-  );
-
-  window.addEventListener(
-    "touchend",
-    (e) => {
-      if (isModalOpen) return;
-      e.preventDefault();
-      handleRaycasterInteraction();
-    },
-    { passive: false }
-  );
 });
 
 function handleRaycasterInteraction() {
