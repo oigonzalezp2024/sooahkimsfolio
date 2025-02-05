@@ -55,6 +55,10 @@ $themes: (
   box-sizing: border-box;
 }
 
+body {
+  overflow: hidden;
+}
+
 :root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
