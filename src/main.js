@@ -1,13 +1,16 @@
+import gsap from "gsap";
+
+import { Howl } from "howler";
+
 import * as THREE from "three";
 import { OrbitControls } from "./utils/OrbitControls.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 import smokeVertexShader from "./shaders/smoke/vertex.glsl";
 import smokeFragmentShader from "./shaders/smoke/fragment.glsl";
 import themeVertexShader from "./shaders/theme/vertex.glsl";
 import themeFragmentShader from "./shaders/theme/fragment.glsl";
-import gsap from "gsap";
-import { Howl } from "howler";
 
 /**  -------------------------- Audio setup -------------------------- */
 
