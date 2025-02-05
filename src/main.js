@@ -1391,7 +1391,7 @@ const handleMuteToggle = (e) => {
         duration: 0.5,
         ease: "back.out(2)",
         onComplete: () => {
-          gsap.set(themeToggleButton, {
+          gsap.set(muteToggleButton, {
             clearProps: "all",
           });
         },
