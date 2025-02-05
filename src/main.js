@@ -9,12 +9,21 @@ import themeFragmentShader from "./shaders/theme/fragment.glsl";
 import gsap from "gsap";
 import { Howl } from "howler";
 
+/**  -------------------------- Audio setup -------------------------- */
+
+// Background Music
 let pianoDebounceTimer = null;
 let isMusicFaded = false;
 const MUSIC_FADE_TIME = 500;
 const PIANO_TIMEOUT = 2000;
 const BACKGROUND_MUSIC_VOLUME = 1;
 const FADED_VOLUME = 0;
+
+const backgroundMusic = new Howl({
+  src: ["/audio/music/cosmic_candy.ogg"],
+  loop: true,
+  volume: 1,
+});
 
 const fadeOutBackgroundMusic = () => {
   if (!isMuted && !isMusicFaded) {
@@ -38,6 +47,45 @@ const fadeInBackgroundMusic = () => {
   }
 };
 
+// Piano
+const pianoKeyMap = {
+  C1_Key: "Key_24",
+  "C#1_Key": "Key_23",
+  D1_Key: "Key_22",
+  "D#1_Key": "Key_21",
+  E1_Key: "Key_20",
+  F1_Key: "Key_19",
+  "F#1_Key": "Key_18",
+  G1_Key: "Key_17",
+  "G#1_Key": "Key_16",
+  A1_Key: "Key_15",
+  "A#1_Key": "Key_14",
+  B1_Key: "Key_13",
+  C2_Key: "Key_12",
+  "C#2_Key": "Key_11",
+  D2_Key: "Key_10",
+  "D#2_Key": "Key_9",
+  E2_Key: "Key_8",
+  F2_Key: "Key_7",
+  "F#2_Key": "Key_6",
+  G2_Key: "Key_5",
+  "G#2_Key": "Key_4",
+  A2_Key: "Key_3",
+  "A#2_Key": "Key_2",
+  B2_Key: "Key_1",
+};
+
+const pianoSounds = {};
+
+Object.values(pianoKeyMap).forEach((soundKey) => {
+  pianoSounds[soundKey] = new Howl({
+    src: [`/audio/sfx/piano/${soundKey}.ogg`],
+    preload: true,
+    volume: 0.5,
+  });
+});
+
+// Button
 const buttonSounds = {
   click: new Howl({
     src: ["/audio/sfx/click/bubble.ogg"],
@@ -46,13 +94,79 @@ const buttonSounds = {
   }),
 };
 
+/**  -------------------------- Scene setup -------------------------- */
 const canvas = document.querySelector("#experience-canvas");
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
 
-// Modal
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#D9CAD1");
+
+const camera = new THREE.PerspectiveCamera(
+  35,
+  sizes.width / sizes.height,
+  0.1,
+  200
+);
+
+const renderer = new THREE.WebGLRenderer({
+  canvas: canvas,
+  antialias: true,
+});
+
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.minDistance = 5;
+controls.maxDistance = 45;
+controls.minPolarAngle = 0;
+controls.maxPolarAngle = Math.PI / 2;
+controls.minAzimuthAngle = 0;
+controls.maxAzimuthAngle = Math.PI / 2;
+
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+
+controls.update();
+
+//Set starting camera position
+if (window.innerWidth < 768) {
+  camera.position.set(
+    29.567116827654726,
+    14.018476147584705,
+    31.37040363900147
+  );
+  controls.target.set(
+    -0.08206262548844094,
+    3.3119233527087255,
+    -0.7433922282864018
+  );
+} else {
+  camera.position.set(17.49173098423395, 9.108969527553887, 17.850992894238058);
+  controls.target.set(
+    0.4624746759408973,
+    1.9719940043010387,
+    -0.8300979125494505
+  );
+}
+
+window.addEventListener("resize", () => {
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  // Update Camera
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+/**  -------------------------- Modal Stuff -------------------------- */
 const modals = {
   work: document.querySelector(".modal.work"),
   about: document.querySelector(".modal.about"),
@@ -188,6 +302,8 @@ const hideModal = (modal) => {
   });
 };
 
+/**  -------------------------- Raycaster setup -------------------------- */
+
 const raycasterObjects = [];
 let currentIntersects = [];
 let currentHoveredObject = null;
@@ -201,18 +317,7 @@ const socialLinks = {
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
-// Loaders
-const textureLoader = new THREE.TextureLoader();
-
-// Model Loaders
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("/draco/");
-
-const backgroundMusic = new Howl({
-  src: ["/audio/music/cosmic_candy.ogg"],
-  loop: true,
-  volume: 1,
-});
+/**  -------------------------- Loading Screen & Intro Animation -------------------------- */
 
 const manager = new THREE.LoadingManager();
 
@@ -291,464 +396,6 @@ function playReveal() {
     "-=0.1"
   );
 }
-
-const loader = new GLTFLoader(manager);
-loader.setDRACOLoader(dracoLoader);
-
-const environmentMap = new THREE.CubeTextureLoader()
-  .setPath("textures/skybox/")
-  .load(["px.webp", "nx.webp", "py.webp", "ny.webp", "pz.webp", "nz.webp"]);
-
-const textureMap = {
-  First: {
-    day: "/textures/room/day/first_texture_set_day.webp",
-    night: "/textures/room/night/first_texture_set_night.webp",
-  },
-  Second: {
-    day: "/textures/room/day/second_texture_set_day.webp",
-    night: "/textures/room/night/second_texture_set_night.webp",
-  },
-  Third: {
-    day: "/textures/room/day/third_texture_set_day.webp",
-    night: "/textures/room/night/third_texture_set_night.webp",
-  },
-  Fourth: {
-    day: "/textures/room/day/fourth_texture_set_day.webp",
-    night: "/textures/room/night/fourth_texture_set_night.webp",
-  },
-};
-
-const loadedTextures = {
-  day: {},
-  night: {},
-};
-
-Object.entries(textureMap).forEach(([key, paths]) => {
-  // Load and configure day texture
-  const dayTexture = textureLoader.load(paths.day);
-  dayTexture.flipY = false;
-  dayTexture.colorSpace = THREE.SRGBColorSpace;
-  dayTexture.minFilter = THREE.LinearFilter;
-  dayTexture.magFilter = THREE.LinearFilter;
-  loadedTextures.day[key] = dayTexture;
-
-  // Load and configure night texture
-  const nightTexture = textureLoader.load(paths.night);
-  nightTexture.flipY = false;
-  nightTexture.colorSpace = THREE.SRGBColorSpace;
-  nightTexture.minFilter = THREE.LinearFilter;
-  nightTexture.magFilter = THREE.LinearFilter;
-  loadedTextures.night[key] = nightTexture;
-});
-
-// Reuseable Materials
-const glassMaterial = new THREE.MeshPhysicalMaterial({
-  transmission: 1,
-  opacity: 1,
-  color: 0xfbfbfb,
-  metalness: 0,
-  roughness: 0,
-  ior: 3,
-  thickness: 0.01,
-  specularIntensity: 1,
-  envMap: environmentMap,
-  envMapIntensity: 1,
-  depthWrite: false,
-  specularColor: 0xfbfbfb,
-});
-
-const whiteMaterial = new THREE.MeshBasicMaterial({
-  color: 0xffffff,
-});
-
-const createMaterialForTextureSet = (textureSet) => {
-  const material = new THREE.ShaderMaterial({
-    uniforms: {
-      uDayTexture1: { value: loadedTextures.day.First },
-      uNightTexture1: { value: loadedTextures.night.First },
-      uDayTexture2: { value: loadedTextures.day.Second },
-      uNightTexture2: { value: loadedTextures.night.Second },
-      uDayTexture3: { value: loadedTextures.day.Third },
-      uNightTexture3: { value: loadedTextures.night.Third },
-      uDayTexture4: { value: loadedTextures.day.Fourth },
-      uNightTexture4: { value: loadedTextures.night.Fourth },
-      uMixRatio: { value: 0 },
-      uTextureSet: { value: textureSet },
-    },
-    vertexShader: themeVertexShader,
-    fragmentShader: themeFragmentShader,
-  });
-
-  Object.entries(material.uniforms).forEach(([key, uniform]) => {
-    if (uniform.value instanceof THREE.Texture) {
-      uniform.value.minFilter = THREE.LinearFilter;
-      uniform.value.magFilter = THREE.LinearFilter;
-    }
-  });
-
-  return material;
-};
-
-const roomMaterials = {
-  First: createMaterialForTextureSet(1),
-  Second: createMaterialForTextureSet(2),
-  Third: createMaterialForTextureSet(3),
-  Fourth: createMaterialForTextureSet(4),
-};
-
-const videoElement = document.createElement("video");
-videoElement.src = "/textures/video/Screen.mp4";
-videoElement.loop = true;
-videoElement.muted = true;
-videoElement.playsInline = true;
-videoElement.autoplay = true;
-videoElement.play();
-
-const videoTexture = new THREE.VideoTexture(videoElement);
-videoTexture.colorSpace = THREE.SRGBColorSpace;
-videoTexture.flipY = false;
-
-window.addEventListener("mousemove", (e) => {
-  touchHappened = false;
-  pointer.x = (e.clientX / sizes.width) * 2 - 1;
-  pointer.y = -(e.clientY / sizes.height) * 2 + 1;
-});
-
-window.addEventListener(
-  "touchstart",
-  (e) => {
-    if (isModalOpen) return;
-    e.preventDefault();
-    pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
-    pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
-  },
-  { passive: false }
-);
-
-window.addEventListener(
-  "touchend",
-  (e) => {
-    if (isModalOpen) return;
-    e.preventDefault();
-    handleRaycasterInteraction();
-  },
-  { passive: false }
-);
-
-// Piano key mapping
-const pianoKeyMap = {
-  C1_Key: "Key_24",
-  "C#1_Key": "Key_23",
-  D1_Key: "Key_22",
-  "D#1_Key": "Key_21",
-  E1_Key: "Key_20",
-  F1_Key: "Key_19",
-  "F#1_Key": "Key_18",
-  G1_Key: "Key_17",
-  "G#1_Key": "Key_16",
-  A1_Key: "Key_15",
-  "A#1_Key": "Key_14",
-  B1_Key: "Key_13",
-  C2_Key: "Key_12",
-  "C#2_Key": "Key_11",
-  D2_Key: "Key_10",
-  "D#2_Key": "Key_9",
-  E2_Key: "Key_8",
-  F2_Key: "Key_7",
-  "F#2_Key": "Key_6",
-  G2_Key: "Key_5",
-  "G#2_Key": "Key_4",
-  A2_Key: "Key_3",
-  "A#2_Key": "Key_2",
-  B2_Key: "Key_1",
-};
-
-const pianoSounds = {};
-
-Object.values(pianoKeyMap).forEach((soundKey) => {
-  pianoSounds[soundKey] = new Howl({
-    src: [`/audio/sfx/piano/${soundKey}.ogg`],
-    preload: true,
-    volume: 0.5,
-  });
-});
-
-function handleRaycasterInteraction() {
-  if (currentIntersects.length > 0) {
-    const object = currentIntersects[0].object;
-
-    if (object.name.includes("Button")) {
-      buttonSounds.click.play();
-    }
-
-    Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
-      if (object.name.includes(keyName)) {
-        if (pianoDebounceTimer) {
-          clearTimeout(pianoDebounceTimer);
-        }
-
-        fadeOutBackgroundMusic();
-
-        pianoSounds[soundKey].play();
-
-        pianoDebounceTimer = setTimeout(() => {
-          fadeInBackgroundMusic();
-        }, PIANO_TIMEOUT);
-
-        gsap.to(object.rotation, {
-          x: object.userData.initialRotation.x + Math.PI / 42,
-          duration: 0.4,
-          ease: "back.out(2)",
-          onComplete: () => {
-            gsap.to(object.rotation, {
-              x: object.userData.initialRotation.x,
-              duration: 0.25,
-              ease: "back.out(2)",
-            });
-          },
-        });
-
-        // gsap.to(object.scale, {
-        //   x: object.userData.initialScale.x * 1.8,
-        //   y: object.userData.initialScale.y * 1.8,
-        //   // z: object.userData.initialScale.z * 1.1,
-        //   duration: 0.2,
-        //   ease: "back.out(1.8)",
-        //   onComplete: () => {
-        //     gsap.to(object.scale, {
-        //       x: object.userData.initialScale.x,
-        //       y: object.userData.initialScale.y,
-        //       // z: object.userData.initialScale.z,
-        //       duration: 0.2,
-        //       ease: "back.out(1.8)",
-        //     });
-        //   },
-        // });
-      }
-    });
-
-    Object.entries(socialLinks).forEach(([key, url]) => {
-      if (object.name.includes(key)) {
-        const newWindow = window.open();
-        newWindow.opener = null;
-        newWindow.location = url;
-        newWindow.target = "_blank";
-        newWindow.rel = "noopener noreferrer";
-      }
-    });
-
-    if (object.name.includes("Work_Button")) {
-      showModal(modals.work);
-    } else if (object.name.includes("About_Button")) {
-      showModal(modals.about);
-    } else if (object.name.includes("Contact_Button")) {
-      showModal(modals.contact);
-    }
-  }
-}
-
-window.addEventListener("click", handleRaycasterInteraction);
-
-// LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
-let fish;
-let coffeePosition;
-let hourHand;
-let minuteHand;
-let chairTop;
-const xAxisFans = [];
-const yAxisFans = [];
-let plank1,
-  plank2,
-  workBtn,
-  aboutBtn,
-  contactBtn,
-  boba,
-  github,
-  youtube,
-  twitter;
-
-let letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8;
-
-let C1_Key,
-  Cs1_Key,
-  D1_Key,
-  Ds1_Key,
-  E1_Key,
-  F1_Key,
-  Fs1_Key,
-  G1_Key,
-  Gs1_Key,
-  A1_Key,
-  As1_Key,
-  B1_Key;
-let C2_Key,
-  Cs2_Key,
-  D2_Key,
-  Ds2_Key,
-  E2_Key,
-  F2_Key,
-  Fs2_Key,
-  G2_Key,
-  Gs2_Key,
-  A2_Key,
-  As2_Key,
-  B2_Key;
-
-loader.load("/models/Room_Portfolio.glb", (glb) => {
-  glb.scene.traverse((child) => {
-    if (child.isMesh) {
-      if (child.name.includes("Fish_Fourth")) {
-        fish = child;
-        child.position.x += 0.04;
-        child.position.z -= 0.03;
-        child.userData.initialPosition = new THREE.Vector3().copy(
-          child.position
-        );
-      }
-      if (child.name.includes("Chair_Top")) {
-        chairTop = child;
-        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
-      }
-
-      if (child.name.includes("Hour_Hand")) {
-        hourHand = child;
-        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
-      }
-
-      if (child.name.includes("Minute_Hand")) {
-        minuteHand = child;
-        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
-      }
-
-      if (child.name.includes("Coffee")) {
-        coffeePosition = child.position.clone();
-      }
-
-      if (child.name.includes("Raycaster")) {
-        raycasterObjects.push(child);
-      }
-
-      if (child.name.includes("Hover") || child.name.includes("Key")) {
-        child.userData.initialScale = new THREE.Vector3().copy(child.scale);
-        child.userData.initialPosition = new THREE.Vector3().copy(
-          child.position
-        );
-        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
-      }
-
-      // LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
-      if (child.name.includes("Hanging_Plank_1")) {
-        plank1 = child;
-        child.scale.set(0, 0, 1);
-      } else if (child.name.includes("Hanging_Plank_2")) {
-        plank2 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("My_Work_Button")) {
-        workBtn = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("About_Button")) {
-        aboutBtn = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Contact_Button")) {
-        contactBtn = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Boba")) {
-        boba = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("GitHub")) {
-        github = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("YouTube")) {
-        youtube = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Twitter")) {
-        twitter = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_1")) {
-        letter1 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_2")) {
-        letter2 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_3")) {
-        letter3 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_4")) {
-        letter4 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_5")) {
-        letter5 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_6")) {
-        letter6 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_7")) {
-        letter7 = child;
-        child.scale.set(0, 0, 0);
-      } else if (child.name.includes("Name_Letter_8")) {
-        letter8 = child;
-        child.scale.set(0, 0, 0);
-      }
-      Object.keys(pianoKeyMap).forEach((keyName) => {
-        if (child.name.includes(keyName)) {
-          const varName = keyName.replace("#", "s").split("_")[0] + "_Key";
-          eval(`${varName} = child`);
-          console.log("HIII IS THIS WORKING THO");
-          child.scale.set(0, 0, 0);
-          child.userData.initialPosition = new THREE.Vector3().copy(
-            child.position
-          );
-        }
-      });
-
-      if (child.name.includes("Water")) {
-        child.material = new THREE.MeshBasicMaterial({
-          color: 0x558bc8,
-          transparent: true,
-          opacity: 0.4,
-          depthWrite: false,
-        });
-      } else if (child.name.includes("Glass")) {
-        child.material = glassMaterial;
-      } else if (child.name.includes("Bubble")) {
-        child.material = whiteMaterial;
-      } else if (child.name.includes("Screen")) {
-        child.material = new THREE.MeshBasicMaterial({
-          map: videoTexture,
-          transparent: true,
-          opacity: 0.9,
-        });
-      } else {
-        Object.keys(textureMap).forEach((key) => {
-          if (child.name.includes(key)) {
-            child.material = roomMaterials[key];
-
-            if (child.name.includes("Fan")) {
-              if (
-                child.name.includes("Fan_2") ||
-                child.name.includes("Fan_4")
-              ) {
-                xAxisFans.push(child);
-              } else {
-                yAxisFans.push(child);
-              }
-            }
-          }
-        });
-      }
-    }
-  });
-
-  if (coffeePosition) {
-    smoke.position.set(
-      coffeePosition.x,
-      coffeePosition.y + 0.2,
-      coffeePosition.z
-    );
-  }
-
-  scene.add(glb.scene);
-});
 
 function playIntroAnimation() {
   const t1 = gsap.timeline({
@@ -1155,58 +802,117 @@ function playIntroAnimation() {
   });
 }
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color("#D9CAD1");
+/**  -------------------------- Loaders & Texture Preparations -------------------------- */
+const textureLoader = new THREE.TextureLoader();
 
-const camera = new THREE.PerspectiveCamera(
-  35,
-  sizes.width / sizes.height,
-  0.1,
-  200
-);
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("/draco/");
 
-const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  antialias: true,
+const loader = new GLTFLoader(manager);
+loader.setDRACOLoader(dracoLoader);
+
+const environmentMap = new THREE.CubeTextureLoader()
+  .setPath("textures/skybox/")
+  .load(["px.webp", "nx.webp", "py.webp", "ny.webp", "pz.webp", "nz.webp"]);
+
+const textureMap = {
+  First: {
+    day: "/textures/room/day/first_texture_set_day.webp",
+    night: "/textures/room/night/first_texture_set_night.webp",
+  },
+  Second: {
+    day: "/textures/room/day/second_texture_set_day.webp",
+    night: "/textures/room/night/second_texture_set_night.webp",
+  },
+  Third: {
+    day: "/textures/room/day/third_texture_set_day.webp",
+    night: "/textures/room/night/third_texture_set_night.webp",
+  },
+  Fourth: {
+    day: "/textures/room/day/fourth_texture_set_day.webp",
+    night: "/textures/room/night/fourth_texture_set_night.webp",
+  },
+};
+
+const loadedTextures = {
+  day: {},
+  night: {},
+};
+
+Object.entries(textureMap).forEach(([key, paths]) => {
+  // Load and configure day texture
+  const dayTexture = textureLoader.load(paths.day);
+  dayTexture.flipY = false;
+  dayTexture.colorSpace = THREE.SRGBColorSpace;
+  dayTexture.minFilter = THREE.LinearFilter;
+  dayTexture.magFilter = THREE.LinearFilter;
+  loadedTextures.day[key] = dayTexture;
+
+  // Load and configure night texture
+  const nightTexture = textureLoader.load(paths.night);
+  nightTexture.flipY = false;
+  nightTexture.colorSpace = THREE.SRGBColorSpace;
+  nightTexture.minFilter = THREE.LinearFilter;
+  nightTexture.magFilter = THREE.LinearFilter;
+  loadedTextures.night[key] = nightTexture;
 });
-renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.minDistance = 5;
-controls.maxDistance = 45;
-controls.minPolarAngle = 0;
-controls.maxPolarAngle = Math.PI / 2;
-controls.minAzimuthAngle = 0;
-controls.maxAzimuthAngle = Math.PI / 2;
+// Reuseable Materials
+const glassMaterial = new THREE.MeshPhysicalMaterial({
+  transmission: 1,
+  opacity: 1,
+  color: 0xfbfbfb,
+  metalness: 0,
+  roughness: 0,
+  ior: 3,
+  thickness: 0.01,
+  specularIntensity: 1,
+  envMap: environmentMap,
+  envMapIntensity: 1,
+  depthWrite: false,
+  specularColor: 0xfbfbfb,
+});
 
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
+const whiteMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffffff,
+});
 
-controls.update();
+const createMaterialForTextureSet = (textureSet) => {
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uDayTexture1: { value: loadedTextures.day.First },
+      uNightTexture1: { value: loadedTextures.night.First },
+      uDayTexture2: { value: loadedTextures.day.Second },
+      uNightTexture2: { value: loadedTextures.night.Second },
+      uDayTexture3: { value: loadedTextures.day.Third },
+      uNightTexture3: { value: loadedTextures.night.Third },
+      uDayTexture4: { value: loadedTextures.day.Fourth },
+      uNightTexture4: { value: loadedTextures.night.Fourth },
+      uMixRatio: { value: 0 },
+      uTextureSet: { value: textureSet },
+    },
+    vertexShader: themeVertexShader,
+    fragmentShader: themeFragmentShader,
+  });
 
-//Set starting camera position
-if (window.innerWidth < 768) {
-  camera.position.set(
-    29.567116827654726,
-    14.018476147584705,
-    31.37040363900147
-  );
-  controls.target.set(
-    -0.08206262548844094,
-    3.3119233527087255,
-    -0.7433922282864018
-  );
-} else {
-  camera.position.set(17.49173098423395, 9.108969527553887, 17.850992894238058);
-  controls.target.set(
-    0.4624746759408973,
-    1.9719940043010387,
-    -0.8300979125494505
-  );
-}
+  Object.entries(material.uniforms).forEach(([key, uniform]) => {
+    if (uniform.value instanceof THREE.Texture) {
+      uniform.value.minFilter = THREE.LinearFilter;
+      uniform.value.magFilter = THREE.LinearFilter;
+    }
+  });
 
-// Shader Stuffffffffff
+  return material;
+};
+
+const roomMaterials = {
+  First: createMaterialForTextureSet(1),
+  Second: createMaterialForTextureSet(2),
+  Third: createMaterialForTextureSet(3),
+  Fourth: createMaterialForTextureSet(4),
+};
+
+// Smoke Shader setup
 const smokeGeometry = new THREE.PlaneGeometry(1, 1, 16, 64);
 smokeGeometry.translate(0, 0.5, 0);
 smokeGeometry.scale(0.33, 1, 0.33);
@@ -1230,6 +936,304 @@ const smokeMaterial = new THREE.ShaderMaterial({
 const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial);
 smoke.position.y = 1.83;
 scene.add(smoke);
+
+const videoElement = document.createElement("video");
+videoElement.src = "/textures/video/Screen.mp4";
+videoElement.loop = true;
+videoElement.muted = true;
+videoElement.playsInline = true;
+videoElement.autoplay = true;
+videoElement.play();
+
+const videoTexture = new THREE.VideoTexture(videoElement);
+videoTexture.colorSpace = THREE.SRGBColorSpace;
+videoTexture.flipY = false;
+
+window.addEventListener("mousemove", (e) => {
+  touchHappened = false;
+  pointer.x = (e.clientX / sizes.width) * 2 - 1;
+  pointer.y = -(e.clientY / sizes.height) * 2 + 1;
+});
+
+window.addEventListener(
+  "touchstart",
+  (e) => {
+    if (isModalOpen) return;
+    e.preventDefault();
+    pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
+    pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
+  },
+  { passive: false }
+);
+
+window.addEventListener(
+  "touchend",
+  (e) => {
+    if (isModalOpen) return;
+    e.preventDefault();
+    handleRaycasterInteraction();
+  },
+  { passive: false }
+);
+
+window.addEventListener("click", handleRaycasterInteraction);
+
+function handleRaycasterInteraction() {
+  if (currentIntersects.length > 0) {
+    const object = currentIntersects[0].object;
+
+    if (object.name.includes("Button")) {
+      buttonSounds.click.play();
+    }
+
+    Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
+      if (object.name.includes(keyName)) {
+        if (pianoDebounceTimer) {
+          clearTimeout(pianoDebounceTimer);
+        }
+
+        fadeOutBackgroundMusic();
+
+        pianoSounds[soundKey].play();
+
+        pianoDebounceTimer = setTimeout(() => {
+          fadeInBackgroundMusic();
+        }, PIANO_TIMEOUT);
+
+        gsap.to(object.rotation, {
+          x: object.userData.initialRotation.x + Math.PI / 42,
+          duration: 0.4,
+          ease: "back.out(2)",
+          onComplete: () => {
+            gsap.to(object.rotation, {
+              x: object.userData.initialRotation.x,
+              duration: 0.25,
+              ease: "back.out(2)",
+            });
+          },
+        });
+      }
+    });
+
+    Object.entries(socialLinks).forEach(([key, url]) => {
+      if (object.name.includes(key)) {
+        const newWindow = window.open();
+        newWindow.opener = null;
+        newWindow.location = url;
+        newWindow.target = "_blank";
+        newWindow.rel = "noopener noreferrer";
+      }
+    });
+
+    if (object.name.includes("Work_Button")) {
+      showModal(modals.work);
+    } else if (object.name.includes("About_Button")) {
+      showModal(modals.about);
+    } else if (object.name.includes("Contact_Button")) {
+      showModal(modals.contact);
+    }
+  }
+}
+
+// LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
+let fish;
+let coffeePosition;
+let hourHand;
+let minuteHand;
+let chairTop;
+const xAxisFans = [];
+const yAxisFans = [];
+let plank1,
+  plank2,
+  workBtn,
+  aboutBtn,
+  contactBtn,
+  boba,
+  github,
+  youtube,
+  twitter;
+
+let letter1, letter2, letter3, letter4, letter5, letter6, letter7, letter8;
+
+let C1_Key,
+  Cs1_Key,
+  D1_Key,
+  Ds1_Key,
+  E1_Key,
+  F1_Key,
+  Fs1_Key,
+  G1_Key,
+  Gs1_Key,
+  A1_Key,
+  As1_Key,
+  B1_Key;
+let C2_Key,
+  Cs2_Key,
+  D2_Key,
+  Ds2_Key,
+  E2_Key,
+  F2_Key,
+  Fs2_Key,
+  G2_Key,
+  Gs2_Key,
+  A2_Key,
+  As2_Key,
+  B2_Key;
+
+loader.load("/models/Room_Portfolio.glb", (glb) => {
+  glb.scene.traverse((child) => {
+    if (child.isMesh) {
+      if (child.name.includes("Fish_Fourth")) {
+        fish = child;
+        child.position.x += 0.04;
+        child.position.z -= 0.03;
+        child.userData.initialPosition = new THREE.Vector3().copy(
+          child.position
+        );
+      }
+      if (child.name.includes("Chair_Top")) {
+        chairTop = child;
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+      }
+
+      if (child.name.includes("Hour_Hand")) {
+        hourHand = child;
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+      }
+
+      if (child.name.includes("Minute_Hand")) {
+        minuteHand = child;
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+      }
+
+      if (child.name.includes("Coffee")) {
+        coffeePosition = child.position.clone();
+      }
+
+      if (child.name.includes("Raycaster")) {
+        raycasterObjects.push(child);
+      }
+
+      if (child.name.includes("Hover") || child.name.includes("Key")) {
+        child.userData.initialScale = new THREE.Vector3().copy(child.scale);
+        child.userData.initialPosition = new THREE.Vector3().copy(
+          child.position
+        );
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+      }
+
+      // LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
+      if (child.name.includes("Hanging_Plank_1")) {
+        plank1 = child;
+        child.scale.set(0, 0, 1);
+      } else if (child.name.includes("Hanging_Plank_2")) {
+        plank2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("My_Work_Button")) {
+        workBtn = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("About_Button")) {
+        aboutBtn = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Contact_Button")) {
+        contactBtn = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Boba")) {
+        boba = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("GitHub")) {
+        github = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("YouTube")) {
+        youtube = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Twitter")) {
+        twitter = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_1")) {
+        letter1 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_2")) {
+        letter2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_3")) {
+        letter3 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_4")) {
+        letter4 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_5")) {
+        letter5 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_6")) {
+        letter6 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_7")) {
+        letter7 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Name_Letter_8")) {
+        letter8 = child;
+        child.scale.set(0, 0, 0);
+      }
+      Object.keys(pianoKeyMap).forEach((keyName) => {
+        if (child.name.includes(keyName)) {
+          const varName = keyName.replace("#", "s").split("_")[0] + "_Key";
+          eval(`${varName} = child`);
+          child.scale.set(0, 0, 0);
+          child.userData.initialPosition = new THREE.Vector3().copy(
+            child.position
+          );
+        }
+      });
+
+      if (child.name.includes("Water")) {
+        child.material = new THREE.MeshBasicMaterial({
+          color: 0x558bc8,
+          transparent: true,
+          opacity: 0.4,
+          depthWrite: false,
+        });
+      } else if (child.name.includes("Glass")) {
+        child.material = glassMaterial;
+      } else if (child.name.includes("Bubble")) {
+        child.material = whiteMaterial;
+      } else if (child.name.includes("Screen")) {
+        child.material = new THREE.MeshBasicMaterial({
+          map: videoTexture,
+          transparent: true,
+          opacity: 0.9,
+        });
+      } else {
+        Object.keys(textureMap).forEach((key) => {
+          if (child.name.includes(key)) {
+            child.material = roomMaterials[key];
+
+            if (child.name.includes("Fan")) {
+              if (
+                child.name.includes("Fan_2") ||
+                child.name.includes("Fan_4")
+              ) {
+                xAxisFans.push(child);
+              } else {
+                yAxisFans.push(child);
+              }
+            }
+          }
+        });
+      }
+    }
+  });
+
+  if (coffeePosition) {
+    smoke.position.set(
+      coffeePosition.x,
+      coffeePosition.y + 0.2,
+      coffeePosition.z
+    );
+  }
+
+  scene.add(glb.scene);
+});
 
 // Event Listeners
 const themeToggleButton = document.querySelector(".theme-toggle-button");
@@ -1395,19 +1399,6 @@ themeToggleButton.addEventListener(
   },
   { passive: false }
 );
-
-window.addEventListener("resize", () => {
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
-
-  // Update Camera
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  // Update renderer
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
 
 function playHoverAnimation(object, isHovering) {
   let scale = 1.4;
