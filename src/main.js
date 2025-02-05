@@ -302,21 +302,6 @@ const hideModal = (modal) => {
   });
 };
 
-/**  -------------------------- Raycaster setup -------------------------- */
-
-const raycasterObjects = [];
-let currentIntersects = [];
-let currentHoveredObject = null;
-
-const socialLinks = {
-  GitHub: "https://github.com/",
-  YouTube: "https://www.youtube.com/",
-  Twitter: "https://www.twitter.com/",
-};
-
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-
 /**  -------------------------- Loading Screen & Intro Animation -------------------------- */
 
 const manager = new THREE.LoadingManager();
@@ -949,91 +934,7 @@ const videoTexture = new THREE.VideoTexture(videoElement);
 videoTexture.colorSpace = THREE.SRGBColorSpace;
 videoTexture.flipY = false;
 
-window.addEventListener("mousemove", (e) => {
-  touchHappened = false;
-  pointer.x = (e.clientX / sizes.width) * 2 - 1;
-  pointer.y = -(e.clientY / sizes.height) * 2 + 1;
-});
-
-window.addEventListener(
-  "touchstart",
-  (e) => {
-    if (isModalOpen) return;
-    e.preventDefault();
-    pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
-    pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
-  },
-  { passive: false }
-);
-
-window.addEventListener(
-  "touchend",
-  (e) => {
-    if (isModalOpen) return;
-    e.preventDefault();
-    handleRaycasterInteraction();
-  },
-  { passive: false }
-);
-
-window.addEventListener("click", handleRaycasterInteraction);
-
-function handleRaycasterInteraction() {
-  if (currentIntersects.length > 0) {
-    const object = currentIntersects[0].object;
-
-    if (object.name.includes("Button")) {
-      buttonSounds.click.play();
-    }
-
-    Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
-      if (object.name.includes(keyName)) {
-        if (pianoDebounceTimer) {
-          clearTimeout(pianoDebounceTimer);
-        }
-
-        fadeOutBackgroundMusic();
-
-        pianoSounds[soundKey].play();
-
-        pianoDebounceTimer = setTimeout(() => {
-          fadeInBackgroundMusic();
-        }, PIANO_TIMEOUT);
-
-        gsap.to(object.rotation, {
-          x: object.userData.initialRotation.x + Math.PI / 42,
-          duration: 0.4,
-          ease: "back.out(2)",
-          onComplete: () => {
-            gsap.to(object.rotation, {
-              x: object.userData.initialRotation.x,
-              duration: 0.25,
-              ease: "back.out(2)",
-            });
-          },
-        });
-      }
-    });
-
-    Object.entries(socialLinks).forEach(([key, url]) => {
-      if (object.name.includes(key)) {
-        const newWindow = window.open();
-        newWindow.opener = null;
-        newWindow.location = url;
-        newWindow.target = "_blank";
-        newWindow.rel = "noopener noreferrer";
-      }
-    });
-
-    if (object.name.includes("Work_Button")) {
-      showModal(modals.work);
-    } else if (object.name.includes("About_Button")) {
-      showModal(modals.about);
-    } else if (object.name.includes("Contact_Button")) {
-      showModal(modals.contact);
-    }
-  }
-}
+/**  -------------------------- Model and Mesh Setup -------------------------- */
 
 // LOL DO NOT DO THIS USE A FUNCTION TO AUTOMATE THIS PROCESS HAHAHAAHAHAHAHAHAHA
 let fish;
@@ -1235,170 +1136,77 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
   scene.add(glb.scene);
 });
 
-// Event Listeners
-const themeToggleButton = document.querySelector(".theme-toggle-button");
-const muteToggleButton = document.querySelector(".mute-toggle-button");
-const sunSvg = document.querySelector(".sun-svg");
-const moonSvg = document.querySelector(".moon-svg");
-const soundOffSvg = document.querySelector(".sound-off-svg");
-const soundOnSvg = document.querySelector(".sound-on-svg");
+/**  -------------------------- Raycaster setup -------------------------- */
 
-const updateMuteState = (muted) => {
-  if (muted) {
-    backgroundMusic.volume(0);
-  } else {
-    backgroundMusic.volume(BACKGROUND_MUSIC_VOLUME);
-  }
+const raycasterObjects = [];
+let currentIntersects = [];
+let currentHoveredObject = null;
 
-  buttonSounds.click.mute(muted);
-  Object.values(pianoSounds).forEach((sound) => {
-    sound.mute(muted);
-  });
+const socialLinks = {
+  GitHub: "https://github.com/",
+  YouTube: "https://www.youtube.com/",
+  Twitter: "https://www.twitter.com/",
 };
 
-const handleMuteToggle = (e) => {
-  e.preventDefault();
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
 
-  isMuted = !isMuted;
-  updateMuteState(isMuted);
-  buttonSounds.click.play();
+function handleRaycasterInteraction() {
+  if (currentIntersects.length > 0) {
+    const object = currentIntersects[0].object;
 
-  gsap.to(muteToggleButton, {
-    rotate: -45,
-    scale: 5,
-    duration: 0.5,
-    ease: "back.out(2)",
-    onStart: () => {
-      if (!isMuted) {
-        soundOffSvg.style.display = "none";
-        soundOnSvg.style.display = "block";
-      } else {
-        soundOnSvg.style.display = "none";
-        soundOffSvg.style.display = "block";
+    if (object.name.includes("Button")) {
+      buttonSounds.click.play();
+    }
+
+    Object.entries(pianoKeyMap).forEach(([keyName, soundKey]) => {
+      if (object.name.includes(keyName)) {
+        if (pianoDebounceTimer) {
+          clearTimeout(pianoDebounceTimer);
+        }
+
+        fadeOutBackgroundMusic();
+
+        pianoSounds[soundKey].play();
+
+        pianoDebounceTimer = setTimeout(() => {
+          fadeInBackgroundMusic();
+        }, PIANO_TIMEOUT);
+
+        gsap.to(object.rotation, {
+          x: object.userData.initialRotation.x + Math.PI / 42,
+          duration: 0.4,
+          ease: "back.out(2)",
+          onComplete: () => {
+            gsap.to(object.rotation, {
+              x: object.userData.initialRotation.x,
+              duration: 0.25,
+              ease: "back.out(2)",
+            });
+          },
+        });
       }
-
-      gsap.to(muteToggleButton, {
-        rotate: 0,
-        scale: 1,
-        duration: 0.5,
-        ease: "back.out(2)",
-        onComplete: () => {
-          gsap.set(themeToggleButton, {
-            clearProps: "all",
-          });
-        },
-      });
-    },
-  });
-};
-
-let isMuted = false;
-muteToggleButton.addEventListener(
-  "click",
-  (e) => {
-    if (touchHappened) return;
-    handleMuteToggle(e);
-  },
-  { passive: false }
-);
-
-muteToggleButton.addEventListener(
-  "touchend",
-  (e) => {
-    touchHappened = true;
-    handleMuteToggle(e);
-  },
-  { passive: false }
-);
-
-const toggleFavicons = () => {
-  const isDark = document.body.classList.contains("dark-theme");
-  const theme = isDark ? "light" : "dark";
-
-  document.querySelector(
-    'link[sizes="96x96"]'
-  ).href = `media/${theme}-favicon/favicon-96x96.png`;
-  document.querySelector(
-    'link[type="image/svg+xml"]'
-  ).href = `/media/${theme}-favicon/favicon.svg`;
-  document.querySelector(
-    'link[rel="shortcut icon"]'
-  ).href = `media/${theme}-favicon/favicon.ico`;
-  document.querySelector(
-    'link[rel="apple-touch-icon"]'
-  ).href = `media/${theme}-favicon/apple-touch-icon.png`;
-  document.querySelector(
-    'link[rel="manifest"]'
-  ).href = `media/${theme}-favicon/site.webmanifest`;
-};
-
-let isNightMode = false;
-const handleThemeToggle = (e) => {
-  e.preventDefault();
-  toggleFavicons();
-
-  const isDark = document.body.classList.contains("dark-theme");
-  document.body.classList.remove(isDark ? "dark-theme" : "light-theme");
-  document.body.classList.add(isDark ? "light-theme" : "dark-theme");
-
-  isNightMode = !isNightMode;
-  buttonSounds.click.play();
-
-  gsap.to(themeToggleButton, {
-    rotate: 45,
-    scale: 5,
-    duration: 0.5,
-    ease: "back.out(2)",
-    onStart: () => {
-      if (isNightMode) {
-        sunSvg.style.display = "none";
-        moonSvg.style.display = "block";
-      } else {
-        moonSvg.style.display = "none";
-        sunSvg.style.display = "block";
-      }
-
-      gsap.to(themeToggleButton, {
-        rotate: 0,
-        scale: 1,
-        duration: 0.5,
-        ease: "back.out(2)",
-        onComplete: () => {
-          gsap.set(themeToggleButton, {
-            clearProps: "all",
-          });
-        },
-      });
-    },
-  });
-
-  Object.values(roomMaterials).forEach((material) => {
-    gsap.to(material.uniforms.uMixRatio, {
-      value: isNightMode ? 1 : 0,
-      duration: 1.5,
-      ease: "power2.inOut",
     });
-  });
-};
 
-// Click event listener
-themeToggleButton.addEventListener(
-  "click",
-  (e) => {
-    if (touchHappened) return;
-    handleThemeToggle(e);
-  },
-  { passive: false }
-);
+    Object.entries(socialLinks).forEach(([key, url]) => {
+      if (object.name.includes(key)) {
+        const newWindow = window.open();
+        newWindow.opener = null;
+        newWindow.location = url;
+        newWindow.target = "_blank";
+        newWindow.rel = "noopener noreferrer";
+      }
+    });
 
-themeToggleButton.addEventListener(
-  "touchend",
-  (e) => {
-    touchHappened = true;
-    handleThemeToggle(e);
-  },
-  { passive: false }
-);
+    if (object.name.includes("Work_Button")) {
+      showModal(modals.work);
+    } else if (object.name.includes("About_Button")) {
+      showModal(modals.about);
+    } else if (object.name.includes("Contact_Button")) {
+      showModal(modals.contact);
+    }
+  }
+}
 
 function playHoverAnimation(object, isHovering) {
   let scale = 1.4;
@@ -1427,7 +1235,6 @@ function playHoverAnimation(object, isHovering) {
     }
   }
 
-  //Random check YOLOOOOOOO
   if (object.name.includes("Fish")) {
     scale = 1.2;
   }
@@ -1504,8 +1311,203 @@ function playHoverAnimation(object, isHovering) {
   }
 }
 
-// Render
-//Lol trying out three.lcock and the built in timestamp lowkey use one for consistency not both XDDDDDD fr fr tho fr
+window.addEventListener("mousemove", (e) => {
+  touchHappened = false;
+  pointer.x = (e.clientX / sizes.width) * 2 - 1;
+  pointer.y = -(e.clientY / sizes.height) * 2 + 1;
+});
+
+window.addEventListener(
+  "touchstart",
+  (e) => {
+    if (isModalOpen) return;
+    e.preventDefault();
+    pointer.x = (e.touches[0].clientX / sizes.width) * 2 - 1;
+    pointer.y = -(e.touches[0].clientY / sizes.height) * 2 + 1;
+  },
+  { passive: false }
+);
+
+window.addEventListener(
+  "touchend",
+  (e) => {
+    if (isModalOpen) return;
+    e.preventDefault();
+    handleRaycasterInteraction();
+  },
+  { passive: false }
+);
+
+window.addEventListener("click", handleRaycasterInteraction);
+
+// Other Event Listeners
+const themeToggleButton = document.querySelector(".theme-toggle-button");
+const muteToggleButton = document.querySelector(".mute-toggle-button");
+const sunSvg = document.querySelector(".sun-svg");
+const moonSvg = document.querySelector(".moon-svg");
+const soundOffSvg = document.querySelector(".sound-off-svg");
+const soundOnSvg = document.querySelector(".sound-on-svg");
+
+const updateMuteState = (muted) => {
+  if (muted) {
+    backgroundMusic.volume(0);
+  } else {
+    backgroundMusic.volume(BACKGROUND_MUSIC_VOLUME);
+  }
+
+  buttonSounds.click.mute(muted);
+  Object.values(pianoSounds).forEach((sound) => {
+    sound.mute(muted);
+  });
+};
+
+const handleMuteToggle = (e) => {
+  e.preventDefault();
+
+  isMuted = !isMuted;
+  updateMuteState(isMuted);
+  buttonSounds.click.play();
+
+  gsap.to(muteToggleButton, {
+    rotate: -45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStart: () => {
+      if (!isMuted) {
+        soundOffSvg.style.display = "none";
+        soundOnSvg.style.display = "block";
+      } else {
+        soundOnSvg.style.display = "none";
+        soundOffSvg.style.display = "block";
+      }
+
+      gsap.to(muteToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(themeToggleButton, {
+            clearProps: "all",
+          });
+        },
+      });
+    },
+  });
+};
+
+let isMuted = false;
+muteToggleButton.addEventListener(
+  "click",
+  (e) => {
+    if (touchHappened) return;
+    handleMuteToggle(e);
+  },
+  { passive: false }
+);
+
+muteToggleButton.addEventListener(
+  "touchend",
+  (e) => {
+    touchHappened = true;
+    handleMuteToggle(e);
+  },
+  { passive: false }
+);
+
+// Themeing stuff
+const toggleFavicons = () => {
+  const isDark = document.body.classList.contains("dark-theme");
+  const theme = isDark ? "light" : "dark";
+
+  document.querySelector(
+    'link[sizes="96x96"]'
+  ).href = `media/${theme}-favicon/favicon-96x96.png`;
+  document.querySelector(
+    'link[type="image/svg+xml"]'
+  ).href = `/media/${theme}-favicon/favicon.svg`;
+  document.querySelector(
+    'link[rel="shortcut icon"]'
+  ).href = `media/${theme}-favicon/favicon.ico`;
+  document.querySelector(
+    'link[rel="apple-touch-icon"]'
+  ).href = `media/${theme}-favicon/apple-touch-icon.png`;
+  document.querySelector(
+    'link[rel="manifest"]'
+  ).href = `media/${theme}-favicon/site.webmanifest`;
+};
+
+let isNightMode = false;
+
+const handleThemeToggle = (e) => {
+  e.preventDefault();
+  toggleFavicons();
+
+  const isDark = document.body.classList.contains("dark-theme");
+  document.body.classList.remove(isDark ? "dark-theme" : "light-theme");
+  document.body.classList.add(isDark ? "light-theme" : "dark-theme");
+
+  isNightMode = !isNightMode;
+  buttonSounds.click.play();
+
+  gsap.to(themeToggleButton, {
+    rotate: 45,
+    scale: 5,
+    duration: 0.5,
+    ease: "back.out(2)",
+    onStart: () => {
+      if (isNightMode) {
+        sunSvg.style.display = "none";
+        moonSvg.style.display = "block";
+      } else {
+        moonSvg.style.display = "none";
+        sunSvg.style.display = "block";
+      }
+
+      gsap.to(themeToggleButton, {
+        rotate: 0,
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(themeToggleButton, {
+            clearProps: "all",
+          });
+        },
+      });
+    },
+  });
+
+  Object.values(roomMaterials).forEach((material) => {
+    gsap.to(material.uniforms.uMixRatio, {
+      value: isNightMode ? 1 : 0,
+      duration: 1.5,
+      ease: "power2.inOut",
+    });
+  });
+};
+
+// Click event listener
+themeToggleButton.addEventListener(
+  "click",
+  (e) => {
+    if (touchHappened) return;
+    handleThemeToggle(e);
+  },
+  { passive: false }
+);
+
+themeToggleButton.addEventListener(
+  "touchend",
+  (e) => {
+    touchHappened = true;
+    handleThemeToggle(e);
+  },
+  { passive: false }
+);
+
+/**  -------------------------- Render and Animations Stuff -------------------------- */
 const clock = new THREE.Clock();
 
 const updateClockHands = () => {
@@ -1526,17 +1528,17 @@ const updateClockHands = () => {
 
 const render = (timestamp) => {
   const elapsedTime = clock.getElapsedTime();
+
+  // Update Shader Univform
   smokeMaterial.uniforms.uTime.value = elapsedTime;
 
+  //Update Orbit Controls
   controls.update();
 
+  // Update Clock hand rotation
   updateClockHands();
 
-  // console.log(camera.position);
-  // console.log("000000000");
-  // console.log(controls.target);
-
-  // Animate Fans
+  // Fan rotate animation
   xAxisFans.forEach((fan) => {
     fan.rotation.x += 0.04;
   });
@@ -1545,7 +1547,7 @@ const render = (timestamp) => {
     fan.rotation.y += 0.04;
   });
 
-  // Chair
+  // Chair rotate animation
   if (chairTop) {
     const time = timestamp * 0.001;
     const baseAmplitude = Math.PI / 8;
@@ -1558,7 +1560,7 @@ const render = (timestamp) => {
     chairTop.rotation.y = chairTop.userData.initialRotation.y + rotationOffset;
   }
 
-  // Fish
+  // Fish up and down animation
   if (fish) {
     const time = timestamp * 0.0015;
     const amplitude = 0.12;
@@ -1571,7 +1573,7 @@ const render = (timestamp) => {
   if (!isModalOpen) {
     raycaster.setFromCamera(pointer, camera);
 
-    // calculate objects intersecting the picking ray
+    // Get all the objects the raycaster is currently shooting through / intersecting with
     currentIntersects = raycaster.intersectObjects(raycasterObjects);
 
     for (let i = 0; i < currentIntersects.length; i++) {}
@@ -1610,5 +1612,3 @@ const render = (timestamp) => {
 };
 
 render();
-
-//COMMENT LOL
