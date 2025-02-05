@@ -1291,6 +1291,11 @@ const handleMuteToggle = (e) => {
         scale: 1,
         duration: 0.5,
         ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(themeToggleButton, {
+            clearProps: "all",
+          });
+        },
       });
     },
   });
@@ -1367,6 +1372,11 @@ const handleThemeToggle = (e) => {
         scale: 1,
         duration: 0.5,
         ease: "back.out(2)",
+        onComplete: () => {
+          gsap.set(themeToggleButton, {
+            clearProps: "all",
+          });
+        },
       });
     },
   });
