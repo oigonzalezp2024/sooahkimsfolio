@@ -447,6 +447,7 @@ function playIntroAnimation() {
     z: 1,
     y: 1,
     x: 1,
+    delay: 0.4,
   })
     .to(
       github.scale,
@@ -476,6 +477,178 @@ function playIntroAnimation() {
       "-=0.6"
     );
 
+  const tFlowers = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  tFlowers.timeScale(0.8);
+
+  tFlowers
+    .to(flower1.scale, {
+      x: 1,
+      y: 1,
+      z: 1,
+    })
+    .to(
+      flower2.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      flower3.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      flower4.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      flower5.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    );
+
+  const tBoxes = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  tBoxes.timeScale(0.8);
+
+  tBoxes
+    .to(box1.scale, {
+      x: 1,
+      y: 1,
+      z: 1,
+    })
+    .to(
+      box2.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      box3.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    );
+
+  const tLamp = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      delay: 0.2,
+      ease: "back.out(1.8)",
+    },
+  });
+  tLamp.timeScale(0.8);
+
+  tLamp.to(lamp.scale, {
+    x: 1,
+    y: 1,
+    z: 1,
+  });
+
+  const tSlippers = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  tSlippers.timeScale(0.8);
+
+  tSlippers
+    .to(slippers1.scale, {
+      x: 1,
+      y: 1,
+      z: 1,
+    })
+    .to(
+      slippers2.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    );
+
+  const tEggs = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  tEggs.timeScale(0.8);
+
+  tEggs
+    .to(egg1.scale, {
+      x: 1,
+      y: 1,
+      z: 1,
+    })
+    .to(
+      egg2.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      egg3.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    );
+
+  const tFish = gsap.timeline({
+    defaults: {
+      delay: 0.8,
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  tFish.timeScale(0.8);
+
+  tFish.to(fish.scale, {
+    x: 1,
+    y: 1,
+    z: 1,
+  });
+  tFlowers.timeScale(0.8);
+
   const lettersTl = gsap.timeline({
     defaults: {
       duration: 0.8,
@@ -489,6 +662,7 @@ function playIntroAnimation() {
       y: letter1.userData.initialPosition.y + 0.3,
       duration: 0.4,
       ease: "back.out(1.8)",
+      delay: 0.25,
     })
     .to(
       letter1.scale,
@@ -984,6 +1158,16 @@ let C2_Key,
   As2_Key,
   B2_Key;
 
+let flower1, flower2, flower3, flower4, flower5;
+
+let box1, box2, box3;
+
+let lamp;
+
+let slippers1, slippers2;
+
+let egg1, egg2, egg3;
+
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
     if (child.isMesh) {
@@ -1078,7 +1262,52 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
       } else if (child.name.includes("Name_Letter_8")) {
         letter8 = child;
         child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Flower_1")) {
+        flower1 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Flower_2")) {
+        flower2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Flower_3")) {
+        flower3 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Flower_4")) {
+        flower4 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Flower_5")) {
+        flower5 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Box_1")) {
+        box1 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Box_2")) {
+        box2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Box_3")) {
+        box3 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Lamp")) {
+        lamp = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Slipper_1")) {
+        slippers1 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Slipper_2")) {
+        slippers2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Fish_Fourth")) {
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Egg_1")) {
+        egg1 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Egg_2")) {
+        egg2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Egg_3")) {
+        egg3 = child;
+        child.scale.set(0, 0, 0);
       }
+
       Object.keys(pianoKeyMap).forEach((keyName) => {
         if (child.name.includes(keyName)) {
           const varName = keyName.replace("#", "s").split("_")[0] + "_Key";
