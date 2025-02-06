@@ -13,7 +13,7 @@ This repo contains code of 수아's Room Folio. If you're interested, learn how 
 # Inspo & Credits!!!
 
 - [Bruno Simon's Room](https://my-room-in-3d.vercel.app/)
-- [Rachel Wei's Room](rachelqrwei.ca)
+- [Rachel Wei's Room](https://rachelqrwei.ca/)
 - [Nicky Blender](https://www.instagram.com/nicky.blender/?hl=en)
 - [Denis Wipart's Materials](https://wipart.artstation.com/store). Don't worry I have commercial license hahaha.
 - [Music](https://youtu.be/eq3C1Uwz6YU)

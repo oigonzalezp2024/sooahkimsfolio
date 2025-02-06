@@ -1146,7 +1146,7 @@ let currentIntersects = [];
 let currentHoveredObject = null;
 
 const socialLinks = {
-  GitHub: "https://github.com/",
+  GitHub: "https://github.com/andrewwoan/sooahkimsfolio",
   YouTube: "https://www.youtube.com/",
   Twitter: "https://www.twitter.com/",
 };
