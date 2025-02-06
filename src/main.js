@@ -435,6 +435,39 @@ function playIntroAnimation() {
       "-=0.6"
     );
 
+  const tFrames = gsap.timeline({
+    defaults: {
+      duration: 0.8,
+      ease: "back.out(1.8)",
+    },
+  });
+  tFrames.timeScale(0.8);
+
+  tFrames
+    .to(frame1.scale, {
+      x: 1,
+      y: 1,
+      z: 1,
+    })
+    .to(
+      frame2.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    )
+    .to(
+      frame3.scale,
+      {
+        x: 1,
+        y: 1,
+        z: 1,
+      },
+      "-=0.5"
+    );
+
   const t2 = gsap.timeline({
     defaults: {
       duration: 0.8,
@@ -486,13 +519,13 @@ function playIntroAnimation() {
   tFlowers.timeScale(0.8);
 
   tFlowers
-    .to(flower1.scale, {
+    .to(flower5.scale, {
       x: 1,
       y: 1,
       z: 1,
     })
     .to(
-      flower2.scale,
+      flower4.scale,
       {
         x: 1,
         y: 1,
@@ -510,7 +543,7 @@ function playIntroAnimation() {
       "-=0.5"
     )
     .to(
-      flower4.scale,
+      flower2.scale,
       {
         x: 1,
         y: 1,
@@ -519,7 +552,7 @@ function playIntroAnimation() {
       "-=0.5"
     )
     .to(
-      flower5.scale,
+      flower1.scale,
       {
         x: 1,
         y: 1,
@@ -589,6 +622,7 @@ function playIntroAnimation() {
       x: 1,
       y: 1,
       z: 1,
+      delay: 0.5,
     })
     .to(
       slippers2.scale,
@@ -647,7 +681,6 @@ function playIntroAnimation() {
     y: 1,
     z: 1,
   });
-  tFlowers.timeScale(0.8);
 
   const lettersTl = gsap.timeline({
     defaults: {
@@ -1168,6 +1201,8 @@ let slippers1, slippers2;
 
 let egg1, egg2, egg3;
 
+let frame1, frame2, frame3;
+
 loader.load("/models/Room_Portfolio.glb", (glb) => {
   glb.scene.traverse((child) => {
     if (child.isMesh) {
@@ -1306,8 +1341,16 @@ loader.load("/models/Room_Portfolio.glb", (glb) => {
       } else if (child.name.includes("Egg_3")) {
         egg3 = child;
         child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Frame_1")) {
+        frame1 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Frame_2")) {
+        frame2 = child;
+        child.scale.set(0, 0, 0);
+      } else if (child.name.includes("Frame_3")) {
+        frame3 = child;
+        child.scale.set(0, 0, 0);
       }
-
       Object.keys(pianoKeyMap).forEach((keyName) => {
         if (child.name.includes(keyName)) {
           const varName = keyName.replace("#", "s").split("_")[0] + "_Key";
