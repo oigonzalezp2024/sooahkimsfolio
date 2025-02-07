@@ -66,12 +66,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.light-theme {
-}
-
-.dark-theme {
-}
-
 // Experience
 #experience {
   position: fixed;
@@ -715,5 +709,33 @@ ul {
 
   @include media.media("<=tablet") {
     font-size: 32px;
+  }
+}
+
+.instructions {
+  @include vars.centered;
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  max-width: 1200px;
+  width: 90%;
+  font-size: 28px;
+  transform: translate(-50%, -50%);
+  font-family: "Shifty Notes";
+  color: #e6dede;
+}
+
+.desktop-instructions {
+  @include media.media("<tablet") {
+    display: none;
+  }
+}
+
+.mobile-instructions {
+  @include media.media(">=tablet") {
+    display: none;
+  }
+  @include media.media("<=tablet") {
+    font-size: 28px;
   }
 }

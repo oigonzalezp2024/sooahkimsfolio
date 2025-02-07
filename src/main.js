@@ -311,6 +311,8 @@ const manager = new THREE.LoadingManager();
 
 const loadingScreen = document.querySelector(".loading-screen");
 const loadingScreenButton = document.querySelector(".loading-screen-button");
+const desktopInstructions = document.querySelector(".desktop-instructions");
+const mobileInstructions = document.querySelector(".mobile-instructions");
 
 manager.onLoad = function () {
   loadingScreenButton.style.border = "8px solid #2a0f4e";
@@ -333,6 +335,8 @@ manager.onLoad = function () {
     loadingScreenButton.style.boxShadow = "none";
     loadingScreenButton.textContent = "~ 안녕하세요 ~";
     loadingScreen.style.background = "#ead7ef";
+    // desktopInstructions.style.color = "#6e5e9c";
+    // mobileInstructions.style.color = "#6e5e9c";
     isDisabled = true;
 
     toggleFavicons();
