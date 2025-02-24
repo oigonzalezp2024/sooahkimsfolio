@@ -1,4 +1,4 @@
-# 수아's Room Folio
+# 수아's Award-Winning Room Folio
 
 **[Live site](http://sooahs-room-folio.com/)**
 
@@ -24,3 +24,8 @@ This repo contains code of 수아's Room Folio. If you're interested, learn how 
 - [Anya Forger | Spy x Family Wallpaper](https://www.uhdpaper.com/2022/03/anya-forger-spy-x-family-4k-5061g.html?m=0)
 - [SVGs](https://www.svgrepo.com/)
 - [Fonts](https://www.fontspace.com/niskala-huruf)
+
+# Won some awards!! 🎉
+
+- [Awwwards](https://www.awwwards.com/sites/suas-room-folio)
+- [CSSDA](https://www.cssdesignawards.com/sites/sooahs-room-folio/47040/)
