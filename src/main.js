@@ -1819,11 +1819,11 @@ const render = (timestamp) => {
 
   // Fan rotate animation
   xAxisFans.forEach((fan) => {
-    fan.rotation.x += 0.04;
+    fan.rotation.x -= 0.04;
   });
 
   yAxisFans.forEach((fan) => {
-    fan.rotation.y += 0.04;
+    fan.rotation.y -= 0.04;
   });
 
   // Chair rotate animation
