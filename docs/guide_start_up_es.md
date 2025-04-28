@@ -1,7 +1,5 @@
 # Guía Detallada para la Inicialización de un Proyecto Digital
 
-**Dirigida a Jóvenes de Cúcuta, Norte de Santander**
-
 ¡Saludos cordiales, jóvenes talentos de nuestra tierra! Esta guía tiene como propósito explicar, de manera clara y estructurada, cómo dar los primeros pasos en sus proyectos digitales.
 
 ## Identificación y Función de los Archivos Clave
