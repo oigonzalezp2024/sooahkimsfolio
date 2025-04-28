@@ -1,7 +1,5 @@
 # Detailed Guide to Initializing a Digital Project
 
-**Addressed to Young Individuals from Cúcuta, Norte de Santander**
-
 Greetings, talented youth of our land! This guide aims to explain, clearly and structurally, how to take the first steps in your digital projects.
 
 ## Identification and Function of Key Files
