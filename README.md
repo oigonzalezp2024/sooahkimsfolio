@@ -6,6 +6,13 @@ This repo contains code of 수아's Room Folio. If you're interested, learn how 
 
 ![Page screenshot](public/media/og-image.webp?raw=true "Page screenshot")
 
+# Instructions
+
+```
+npm install
+npm run dev
+```
+
 # Updates!!!
 
 - None so far other than reformatting
