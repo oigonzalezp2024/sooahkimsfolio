@@ -29,3 +29,13 @@ This repo contains code of 수아's Room Folio. If you're interested, learn how 
 
 - [Awwwards](https://www.awwwards.com/sites/suas-room-folio)
 - [CSSDA](https://www.cssdesignawards.com/sites/sooahs-room-folio/47040/)
+
+# 📖 Detailed Documentation for Getting Started
+
+For a comprehensive guide on how to initialize your digital project, including the identification of key files and the steps to launch it, please refer to the Detailed Manual for Starting Digital Projects. This manual has been especially created to help you get started!
+
+
+| Docs| Link | Date |
+|--|--|--|
+| Guide Start Up |[**English Version**](./docs/guide_start_up_en.md) | 2025-04-28 | 
+| Guide Start Up |[**Version en Español**](./docs/guide_start_up_es.md) | 2025-04-28 | 
