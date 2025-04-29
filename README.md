@@ -40,7 +40,7 @@ For a comprehensive guide on how to initialize your digital project, including t
 | Guide Start Up        |[**English Version**](./docs/guide_start_up_en.md)     | 2025-04-28 | 
 | Basic git guide       |[**English Version**](./docs/basic_git_guide.md)       | 2025-04-29 | 
 
-# Documentacion en Español
+# Documentación en Español
 | Docs| Link | Date |
 |--|--|--|
 | Guía de inicio rápida |[**Versión en Español**](./docs/guide_start_up_es.md)  | 2025-04-28 | 
