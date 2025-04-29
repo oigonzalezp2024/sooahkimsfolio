@@ -34,8 +34,14 @@ This repo contains code of 수아's Room Folio. If you're interested, learn how 
 
 For a comprehensive guide on how to initialize your digital project, including the identification of key files and the steps to launch it, please refer to the Detailed Manual for Starting Digital Projects. This manual has been especially created to help you get started!
 
-
+# English Documentation
 | Docs| Link | Date |
 |--|--|--|
-| Guide Start Up |[**English Version**](./docs/guide_start_up_en.md) | 2025-04-28 | 
-| Guide Start Up |[**Version en Español**](./docs/guide_start_up_es.md) | 2025-04-28 | 
+| Guide Start Up        |[**English Version**](./docs/guide_start_up_en.md)     | 2025-04-28 | 
+| Basic git guide       |[**English Version**](./docs/basic_git_guide.md)       | 2025-04-29 | 
+
+# Documentacion en Español
+| Docs| Link | Date |
+|--|--|--|
+| Guía de inicio rápida |[**Versión en Español**](./docs/guide_start_up_es.md)  | 2025-04-28 | 
+| Guía básica de git    |[**Versión en Español**](./docs/guia_basica_de_git.md) | 2025-04-29 | 
